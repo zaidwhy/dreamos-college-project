@@ -21,3 +21,6 @@ Thumbs.db
 
 ## Env
 .env
+
+# Office auto-repair artifacts
+*[Repaired]*
