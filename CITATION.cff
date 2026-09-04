@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+message: "If you use this project, please cite it as below."
+title: "DreamOS"
+authors:
+  - family-names: "Syed"
+    given-names: "Zaid Ali"
+date-released: 2026-07-28
+url: "https://github.com/zaidwhy/dreamos-college-project"
+repository-code: "https://github.com/zaidwhy/dreamos-college-project"
+license: MIT
+abstract: >
+  A semantic file-management OS shell.
