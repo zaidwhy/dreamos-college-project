@@ -13,20 +13,28 @@ describing what you want instead of remembering exact names or paths.
 
 ## Status
 
-Core 3 modules from the project proposal are built and working:
+All six modules from the project proposal are built, tested, and packaged:
 
 - **Natural Language Interface** - a chat-style input that classifies intent (search, open,
-  or organize) and routes to the right module (`backend/app/nl_interface.py`). "Open" intents
-  (e.g. "open my resume") resolve to the best-matching file and actually launch it in its
+  related, workspace, organize) and routes to the right module (`backend/app/nl_interface.py`).
+  "Open" intents (e.g. "open my resume") resolve to the best-matching file and launch it in its
   default OS application via Tauri's opener plugin, scoped to `$HOME/**` in
   `frontend/src-tauri/capabilities/default.json`.
 - **Semantic Search Engine** - natural-language queries over the vault via embeddings +
   ChromaDB, with a tuned similarity threshold (`backend/app/search.py`)
 - **AI File Organizer** - LLM-generated summary/tags/category per file, with a reversible
   apply/revert move into semantic folders (`backend/app/organizer.py`)
-
-Deferred to a later phase (after review): Knowledge Graph, Context Memory Engine,
-Intelligent Workspace Manager.
+- **Knowledge Graph** - typed, weighted relationships between files: similar content
+  (mean-centered embedding similarity), direct references (one file names another), and shared
+  AI tags. Clusters come from average-linkage merging. Shown as an interactive graph in the app
+  (`backend/app/knowledge_graph.py`)
+- **Context Memory Engine** - conversation turns persisted per session, so follow-ups such as
+  "open it", "open the second one" or "what's related to that" resolve against what was just
+  shown. Also records which files you open, which breaks near-ties later
+  (`backend/app/context_memory.py`)
+- **Intelligent Workspace Manager** - proactive, explainable recommendations (related groups,
+  frequently used files, duplicates, unorganized files, stale files) and named workspaces that
+  open all their files in one click (`backend/app/workspace.py`)
 
 ## Architecture
 
@@ -42,13 +50,19 @@ backend/              FastAPI service
     vectorstore.py       ChromaDB persistent client wrapper
     search.py            semantic search with similarity threshold + top-k dedupe
     organizer.py          AI categorization + reversible apply/revert
+    knowledge_graph.py    file relationships (edges keyed by file id) + clustering
+    context_memory.py     session memory, follow-up resolution, usage tracking
+    workspace.py          recommendations + named workspaces
     nl_interface.py       intent classification + routing
     main.py               FastAPI routes
   tests/               offline pytest suite (mocked embeddings/LLM, no Ollama needed)
 frontend/             Tauri + React desktop shell
   src/
-    api.ts             typed fetch client for the backend
-    App.tsx            chat UI: search results + organize suggestion cards
+    api.ts             typed fetch client for the backend (+ persisted session id)
+    App.tsx            tabbed shell: Chat, Knowledge graph, Workspaces
+    components/        Results (search/organize/workspace cards), GraphView (d3-force SVG),
+                       WorkspacePanel, WorkspaceCards
+    openFile.ts        opens files via the Tauri opener and reports usage
   src-tauri/           Rust/Tauri shell
 ```
 
@@ -87,7 +101,9 @@ npm run tauri dev
 ```
 
 Type a request like "find my resume" or "organize my unsorted files" into the DreamOS
-window.
+window. Follow-ups work too: "find my invoices", then "open the second one". Other things
+to try: "what's related to my resume", "suggest some workspaces". The Knowledge graph and
+Workspaces tabs show the same data visually.
 
 ## Building an installer
 
@@ -111,8 +127,9 @@ cd backend
 ./.venv/Scripts/python.exe -m pytest -v
 ```
 
-19 tests, fully offline - embeddings and LLM calls are mocked via fixtures in
-`tests/conftest.py`, so no Ollama instance is required to run them.
+97 tests, fully offline - embeddings and LLM calls are mocked via fixtures in
+`tests/conftest.py`, so no Ollama instance is required to run them. They run on every push
+in CI (`.github/workflows/ci.yml`).
 
 ## Regenerating the demo vault
 
@@ -122,6 +139,19 @@ python backend/scripts/generate_demo_vault.py --reset
 
 See `CLAUDE.md` for scope decisions, the embedding-similarity tuning note, and why the vault
 is sandboxed rather than a real personal folder.
+
+## Known limitations
+
+- **Intent routing** uses a 3B local model (`llama3.2`). Measured on phrasings the prompt was
+  never tuned on, it routes 23 of 26 messages correctly (88%); borderline wording such as "which
+  files should I archive" can land on `organize` instead of `workspace`.
+- **Short, generic search queries** (e.g. "meeting") can return nothing above the similarity
+  threshold, while descriptive ones ("notes from the faculty review call") work. Retrieval
+  quality is limited by embedding the raw text with `nomic-embed-text`.
+- **Graph clustering** is deliberately conservative: some genuinely related files (e.g. the
+  personal notes) stay unlinked rather than risk grouping unrelated ones.
+- Similarity is computed pairwise, which is fine at vault scale (tens to low hundreds of
+  files) but would need an approximate method for very large collections.
 
 ## Project Monitoring - I report
 

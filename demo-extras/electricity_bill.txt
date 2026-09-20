@@ -1,0 +1,6 @@
+ELECTRICITY BILL - MSEDCL
+Consumer No: 1234567890
+Billing period: August 2026
+Units consumed: 212
+Amount due: INR 1,860
+Due date: 2026-09-28
