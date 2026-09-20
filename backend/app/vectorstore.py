@@ -62,6 +62,10 @@ def get_file_vectors() -> dict[str, list[float]]:
     return {path: [x / counts[path] for x in total] for path, total in sums.items()}
 
 
+def count() -> int:
+    return get_collection().count()
+
+
 def query(embedding: list[float], top_k: int) -> dict:
     collection = get_collection()
     return collection.query(query_embeddings=[embedding], n_results=top_k)

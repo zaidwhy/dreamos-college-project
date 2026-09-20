@@ -16,7 +16,7 @@ what is described. Rehearse it once end to end.
    app (`frontend/src-tauri/target/release/frontend.exe`); if that file is missing run
    `npm run tauri build` in `frontend/` first, otherwise it falls back to a slow `tauri dev`.
 4. **Have ready for section 8:** `demo-extras/electricity_bill.txt` (copied into `demo-vault/` live).
-5. Do not use short generic queries like "meeting" - see "Known limits" at the bottom.
+5. Short queries work but are best-effort - see "Known limits" at the bottom before improvising.
 
 ---
 
@@ -48,7 +48,7 @@ no cloud calls, no API keys. The proposal had six modules; all six are built."
 
 ## 4. Context memory: follow-ups (60 sec)
 
-**Do:** type `find my invoices` (3 results), then `open the second one`, then `open it`.
+**Do:** type `find my invoices` (2 results: `inv_003.txt`, `recieved_payment.txt`), then `open the second one`, then `open it`.
 
 **Say:** "The second message means nothing on its own. The Context Memory Engine keeps the
 conversation, so 'the second one' resolves to `recieved_payment.txt`, and 'it' to the file just
@@ -119,10 +119,11 @@ vault, and the final report and paper."
 
 ## Known limits (say them if asked; do not hide them)
 
-- **Short generic queries** like "meeting" return nothing above the similarity threshold, and
-  "meeting notes" returns the wrong files. Descriptive queries work: `notes from the faculty review
-  call` -> `review_call_transcript.txt`. A likely cause is that `nomic-embed-text` expects
-  `search_query:` / `search_document:` prefixes that the pipeline does not add.
+- **Short queries are best-effort.** `meeting` and `find something about a meeting` now return
+  `mtg_04_12.txt` first, but `meeting notes` ranks `workout_log.txt` first (it mentions "the project
+  meeting"). Measured on 31 labelled queries: a correct file appears for 27 of 27 valid queries and
+  ranks first for 24 of 27. Off-topic file-shaped queries return labelled low-confidence guesses
+  rather than nothing. Descriptive queries are the safest: `notes from the faculty review call`.
 - **Intent routing** is a 3B model: 23 of 26 held-out phrasings routed correctly. "Which files should
   I archive" can be read as `organize`.
 - **Graph clustering** is conservative, so some related files (e.g. the personal notes) stay unlinked.

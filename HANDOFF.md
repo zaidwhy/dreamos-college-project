@@ -52,11 +52,17 @@ Built 2026-09-20 for the Monitoring on the 24th:
 
 ## Known issues / open items
 
-- **Search quality on short generic queries** (pre-existing, not from this work): "meeting" returns
-  nothing, "meeting notes" returns `workout_log.txt`. Descriptive queries work. Suspected cause:
-  `nomic-embed-text` expects `search_query:` / `search_document:` prefixes that `ollama_client.embed`
-  does not add. Fixing it means re-embedding the vault and retuning `search_similarity_threshold`
-  (0.55) and the graph thresholds - a decision for Zaid, deliberately not done here.
+- **Short-query search: FIXED 2026-09-20, with measurements.** Was: "meeting" returned nothing. Built
+  a 31-query labelled set from the vault contents (tune and held-out halves) and compared options:
+  (a) fixed 0.55 cutoff: correct file in results for 20/27; (b) nomic `search_query:`/`search_document:`
+  prefixes: top-1 21->24/27 but a fixed cutoff still cannot separate `meeting` (0.56) from junk
+  (0.57), needs a full re-embed and retunes every threshold - NOT adopted; (c) LLM query expansion:
+  top-1 fell to 13/27 - rejected; (d) adopted: relative cutoff (`search_floor` 0.47, within
+  `search_relative_margin` 0.06 of the best) + keyword boost (`search_lexical_weight` 0.08): correct
+  file in results 27/27, top-1 24/27 (held-out 13/14), precision 0.82, no re-embedding. `open` only
+  launches at or above `search_similarity_threshold` (0.55). Residuals: `meeting notes` ranks
+  `workout_log.txt` first (it says "project meeting"); 3 of 4 off-topic queries return
+  labelled low-confidence guesses. Eval scripts were scratch (not in the repo); the numbers are here.
 - One cosmetic label overlap in the graph view between two unlinked files at the bottom.
 - **Monitoring II deck is done:** `docs/DreamOS-Project-Monitoring-II.pptx` (20 slides: full report
   content updated to the finished system). Regenerate: `NODE_PATH="$(npm root -g)" node

@@ -20,8 +20,20 @@ class Settings(BaseSettings):
     # nomic-embed-text puts unrelated text around ~0.5 cosine similarity, not near 0 -
     # a naive high threshold (e.g. 0.8) silently drops every real match. Tuned empirically
     # against the demo vault's known-relevant/known-irrelevant query pairs.
+    # A match at or above this is reported as a match ("confident"); "open" only launches at or
+    # above it. It is no longer a hard cutoff: short queries ("meeting") score low even when the
+    # top hit is right, and on a 27-query labelled set a fixed 0.55 cutoff missed 7 of them.
     search_similarity_threshold: float = 0.55
     search_top_k: int = 8
+    # What is returned: nothing below the floor, and otherwise every file within `margin` of the
+    # best hit. On the same set this found a correct file for 27 of 27 queries (20 of 27 before).
+    search_floor: float = 0.47
+    search_relative_margin: float = 0.06
+    # Embeddings under-weight literal keywords in short queries ("meeting" vs a file that says
+    # "Meeting - 2026-04-12"). Each file gets this much extra score, scaled by the fraction of the
+    # query's words that appear in its text or filename. Top-1 accuracy on the labelled set went
+    # from 21/27 to 24/27 (13/14 vs 10/14 held-out) and stayed there for weights 0.08 to 0.20.
+    search_lexical_weight: float = 0.08
 
     # "open" auto-launches a file, so a close runner-up (e.g. a teammate's similarly-worded
     # CV) must block auto-open rather than silently launching the wrong person's file.

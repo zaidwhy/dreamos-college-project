@@ -92,9 +92,12 @@ def _route(intent: str, query: str, referenced: str | None) -> NLResponse:
     if intent == "search":
         hits = search.semantic_search(query)
         if not hits:
+            return NLResponse(intent=intent, message=f"No files matched '{query}'.")
+        if hits[0].similarity < settings.search_similarity_threshold:
             return NLResponse(
                 intent=intent,
-                message=f"No files matched '{query}' above the similarity threshold.",
+                message=f"No strong match for '{query}'. Closest files, low confidence:",
+                search_results=hits,
             )
         return NLResponse(
             intent=intent,
@@ -158,6 +161,13 @@ def _open(query: str, referenced: str | None) -> NLResponse:
         return NLResponse(intent="open", message=f"No file found matching '{query}'.")
 
     best = hits[0]
+    if best.similarity < settings.search_similarity_threshold:
+        # Weak matches are now returned by search, but launching a file needs real confidence.
+        return NLResponse(
+            intent="open",
+            message=f"Not sure which file you mean by '{query}'. Closest matches, nothing opened:",
+            search_results=hits,
+        )
     tied = [h for h in hits if best.similarity - h.similarity < settings.open_ambiguity_margin]
     if len(tied) > 1:
         # A close call. Files the user actually opens before are the best tie-breaker.

@@ -84,7 +84,8 @@ def test_handle_message_falls_back_to_other_on_unknown_intent(isolated_env, fake
 
 
 # ---------------------------------------------------------------- session memory
-# a.txt / b.txt / c.txt match the query "invoices" in that order (1.0, ~0.90, 0.80).
+# a.txt / b.txt / c.txt match the query "invoices" in that order (1.0, 0.97, 0.95): all within the
+# search margin of the best hit, so all three are returned.
 
 
 @pytest.fixture
@@ -92,8 +93,8 @@ def invoice_vault(isolated_env, fake_embed):
     vault = isolated_env
     vectors = {
         "a.txt": [1.0, 0.0, 0.0, 0.0],
-        "b.txt": [0.9, 0.44, 0.0, 0.0],
-        "c.txt": [0.8, 0.6, 0.0, 0.0],
+        "b.txt": [0.97, 0.243, 0.0, 0.0],
+        "c.txt": [0.95, 0.312, 0.0, 0.0],
     }
     for name, vector in vectors.items():
         (vault / name).write_text(f"body of {name}", encoding="utf-8")
@@ -193,7 +194,8 @@ def test_close_call_between_files_prefers_the_one_the_user_opens(isolated_env, f
     assert "you open most" in second.message
 
 
-def test_a_successful_open_is_recorded_as_usage(invoice_vault, fake_generate_json):
+def test_a_successful_open_is_recorded_as_usage(invoice_vault, fake_embed, fake_generate_json):
+    fake_embed["invoices"] = [1.0, -0.3, 0.0, 0.0]  # a.txt clearly closest (0.96 vs 0.86 and 0.82)
     fake_generate_json.append({"intent": "open", "query": "invoices"})
 
     handle_message("open invoices")
@@ -262,3 +264,36 @@ def test_workspace_intent_opens_a_named_workspace(invoice_vault, fake_generate_j
     assert len(response.open_paths) == 2
     assert response.open_paths[0].endswith("a.txt")
     assert context_memory.open_counts() == {"a.txt": 1, "b.txt": 1}
+
+
+# ------------------------------------------------- weak matches: shown as guesses, never opened
+
+
+def _weak_vault(isolated_env, fake_embed):
+    # cosine similarity to the query [1,0,0,0] is 0.50: above the search floor, below "confident"
+    (isolated_env / "maybe.txt").write_text("a vague document", encoding="utf-8")
+    fake_embed["a vague document"] = [0.5, 0.866, 0.0, 0.0]
+    fake_embed["vague query"] = [1.0, 0.0, 0.0, 0.0]
+    index_vault(isolated_env)
+
+
+def test_a_weak_search_hit_is_labelled_as_a_low_confidence_guess(isolated_env, fake_embed, fake_generate_json):
+    _weak_vault(isolated_env, fake_embed)
+    fake_generate_json.append({"intent": "search", "query": "vague query"})
+
+    response = handle_message("vague query")
+
+    assert [h.path for h in response.search_results] == ["maybe.txt"]
+    assert "No strong match" in response.message and "low confidence" in response.message
+
+
+def test_open_never_launches_a_low_confidence_match(isolated_env, fake_embed, fake_generate_json):
+    _weak_vault(isolated_env, fake_embed)
+    fake_generate_json.append({"intent": "open", "query": "vague query"})
+
+    response = handle_message("open the vague thing")
+
+    assert response.open_path is None
+    assert [h.path for h in response.search_results] == ["maybe.txt"]  # offered, not opened
+    assert "nothing opened" in response.message
+    assert context_memory.open_counts() == {}

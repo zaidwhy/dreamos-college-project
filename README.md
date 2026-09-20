@@ -145,9 +145,14 @@ is sandboxed rather than a real personal folder.
 - **Intent routing** uses a 3B local model (`llama3.2`). Measured on phrasings the prompt was
   never tuned on, it routes 23 of 26 messages correctly (88%); borderline wording such as "which
   files should I archive" can land on `organize` instead of `workspace`.
-- **Short, generic search queries** (e.g. "meeting") can return nothing above the similarity
-  threshold, while descriptive ones ("notes from the faculty review call") work. Retrieval
-  quality is limited by embedding the raw text with `nomic-embed-text`.
+- **Search on very short queries is best-effort.** On a 31-query labelled set (`meeting`, `python`,
+  `invoice`, plus descriptive and off-topic ones) a correct file appears for 27 of 27 valid
+  queries and ranks first for 24 of 27 (13 of 14 on the held-out half). It works by returning files
+  near the best hit rather than above one fixed score, plus a small keyword boost (details in
+  `backend/app/search.py`). Weak matches are shown as "low confidence" and `open` will not launch
+  them. A one-word query can still rank a file that merely contains the word first (`meeting notes`
+  ranks `workout_log.txt`, which mentions a project meeting, above the real meeting notes), and
+  off-topic file-shaped queries return low-confidence guesses instead of nothing.
 - **Graph clustering** is deliberately conservative: some genuinely related files (e.g. the
   personal notes) stay unlinked rather than risk grouping unrelated ones.
 - Similarity is computed pairwise, which is fine at vault scale (tens to low hundreds of
