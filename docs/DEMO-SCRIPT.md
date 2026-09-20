@@ -105,7 +105,7 @@ reorganises files only earns trust if undoing is as reliable as doing."
 
 **Do:** in a terminal in `backend/`: `./.venv/Scripts/python.exe -m pytest -q`
 
-**Say:** "97 tests, fully offline - the embeddings and LLM are mocked, so they need no Ollama. They also
+**Say:** "107 tests, fully offline - the embeddings and LLM are mocked, so they need no Ollama. They also
 run on every push in CI. Beyond unit tests I measured the intent router on the real model: 88% on
 phrasings it was not tuned on, and the failures are documented, not hidden."
 

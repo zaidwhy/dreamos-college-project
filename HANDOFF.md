@@ -20,7 +20,7 @@ Built 2026-09-20 for the Monitoring on the 24th:
 - **Workspace Manager** (`workspace.py`): rule-based recommendations + `workspaces`.
 - NL interface gained `related` and `workspace` intents; `/chat` takes a `session_id`.
 - Frontend: Chat / Knowledge graph / Workspaces tabs, clickable results, `New chat`.
-- 97 backend tests, all offline. CI (`.github/workflows/ci.yml`) now actually exists and passes.
+- 107 backend tests, all offline. CI (`.github/workflows/ci.yml`) now actually exists and passes.
 
 ## Decisions worth knowing (not derivable from the code)
 
@@ -64,12 +64,11 @@ Built 2026-09-20 for the Monitoring on the 24th:
   `workout_log.txt` first (it says "project meeting"); 3 of 4 off-topic queries return
   labelled low-confidence guesses. Eval scripts were scratch (not in the repo); the numbers are here.
 - One cosmetic label overlap in the graph view between two unlinked files at the bottom.
-- **Monitoring II deck is done:** `docs/DreamOS-Project-Monitoring-II.pptx` (20 slides: full report
-  content updated to the finished system). Regenerate: `NODE_PATH="$(npm root -g)" node
-  docs/build_pptx_m2.js`. Diagrams in `docs/diagrams/` were rewritten for all six modules.
-- **The Word report is NOT updated:** `docs/DreamOS-Project-Monitoring-I.docx` still describes the
-  50% state (3 of 6 modules). `docs/build_report.js` regenerates it; its text needs the new status,
-  requirement table, module table, ER tables and testing section.
+- **Monitoring II deliverables are done (2026-09-20):** `docs/DreamOS-Project-Monitoring-II.docx`
+  (19-page report; regenerate with `NODE_PATH="$(npm root -g)" node docs/build_report_m2.js`, then
+  open it in Word and update the TOC field - docx-js leaves it empty) and `docs/DreamOS-Project-Monitoring-II.pptx` (22 slides mirroring the report;
+  `docs/build_pptx_m2.js`). Diagrams in `docs/diagrams/` were rewritten for all six modules. The
+  Monitoring-I docx and decks are kept unchanged as the earlier submission record.
 - pptxgenjs gotcha, found the hard way: `addShape("oval")` is not a valid shape name (use
   `"ellipse"`). Viewers tolerate it but real PowerPoint calls the file corrupt, which is why an
   earlier deck produced a `[Repaired]` copy. Always confirm a generated .pptx opens via PowerPoint

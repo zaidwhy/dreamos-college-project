@@ -231,7 +231,7 @@ async function main() {
     ], { size: 14.5 });
     cardText(s, 0.6, 4.15, 5.95, 2.65, "Tools", [
       "Git and GitHub (private repository) with CI on every push",
-      "pytest: 97 tests, fully offline (embeddings and LLM mocked)",
+      "pytest: 107 tests, fully offline (embeddings and LLM mocked)",
       "Mermaid diagrams; pptxgenjs and docx-js for deliverables",
       "WiX and NSIS (Tauri bundler) for Windows installers",
     ], { size: 14.5 });
@@ -387,7 +387,7 @@ async function main() {
     const s = contentSlide(pres, "Implementation status");
     [
       ["6 / 6", "proposed modules built, integrated, tested and packaged", NAVY],
-      ["97", "automated tests, all offline; CI on every push", TEAL],
+      ["107", "automated tests, all offline; CI on every push", TEAL],
       ["88%", "intent routing on phrasings the prompt was never tuned on (23 of 26)", "8A93AA"],
     ].forEach(([big, small, col], i) => {
       const x = 0.6 + i * 4.1;
@@ -409,65 +409,104 @@ async function main() {
     ], { size: 15, accent: GREEN });
   }
 
-  // ------------------------------------------------------------ 17. engineering decisions
+  // ------------------------------------------------------------ 17a. knowledge graph
   {
-    const s = contentSlide(pres, "Key engineering findings", "Each was measured on the real models and the demo vault, not assumed");
-    cardText(s, 0.6, 1.5, 5.95, 2.5, "Raw embedding similarity misled the graph", [
-      "Doc-vs-doc cosine with nomic-embed-text has median 0.52 and max 0.83.",
-      "An unrelated pair (notes / spec_v1, 0.72) outscored a real invoice pair (0.67).",
-      "Fix: mean-center the vectors; real groups then rank at the top.",
-    ], { size: 14.5 });
-    cardText(s, 6.8, 1.5, 5.95, 2.5, "Clusters must not chain", [
-      "Connected components merged resumes with unrelated proposals through two weak edges (a 7-file group).",
-      "Fix: average-linkage merging - a lone bridge edge averages to near zero.",
-      "Result: Resumes (4), Invoices (4), Code (3), Project Docs (3).",
-    ], { size: 14.5 });
-    cardText(s, 0.6, 4.2, 5.95, 2.6, "Follow-ups are rules first, model second", [
-      "Ordinals and bare pronouns are matched deterministically, so they are testable.",
-      "The 3B model's own \"refers to previous\" flag is only a fallback.",
-      "\"open it\" is forced to open even if the model calls it a search.",
-    ], { size: 14.5 });
-    cardText(s, 6.8, 4.2, 5.95, 2.6, "Usage memory breaks near-ties", [
-      "Two close candidates (two resumes): DreamOS asks instead of guessing.",
-      "After the user picks one, the next ask opens it directly.",
-      "Recommendations are rule-based on purpose: reproducible and explainable.",
-    ], { size: 14.5 });
+    const s = contentSlide(pres, "Knowledge graph: three edge kinds, two measured fixes", "Report section 5.2 - measured on the real models and the 37-file demo vault");
+    cardText(s, 0.6, 1.5, 3.9, 5.3, "Edge kinds", [
+      "similar: files whose embeddings are close; each file nominates its 3 strongest neighbours",
+      "references: directed - a file names another file (final_final_v3 -> resume_final)",
+      "shared_tag: at least two AI-generated tags in common",
+      "37 files, 24 links, 12 unlinked",
+    ], { size: 14 });
+    cardText(s, 4.65, 1.5, 3.95, 5.3, "Fix 1: raw similarity misleads", [
+      "Across 666 file pairs: median cosine 0.52, max 0.83",
+      "An unrelated pair (notes / spec_v1, 0.72) outscored a real invoice pair (0.67)",
+      "Fix: subtract the corpus mean before comparing; real groups then rank at the top and a 0.25 threshold works",
+    ], { size: 14 });
+    cardText(s, 8.75, 1.5, 4.0, 5.3, "Fix 2: clusters must not chain", [
+      "Connected components merged 4 resumes with 3 unrelated files through two weak edges (a 7-file group)",
+      "Fix: average-linkage - merge only while the average pair weight stays above 0.12",
+      "Result: Resumes 4, Invoices 4, Code 3, Project Docs 3",
+    ], { size: 14 });
+  }
+
+  // ------------------------------------------------------------ 17b. memory + workspace
+  {
+    const s = contentSlide(pres, "Context memory and workspace manager", "Report sections 5.3 and 5.4");
+    cardText(s, 0.6, 1.5, 5.6, 5.3, "Context Memory Engine", [
+      "Every turn is stored with the ids of the files it showed, so follow-ups survive a restart and a file move",
+      "\"the second one\" and \"open it\" are resolved by rules; the 3B model's own flag is only a fallback",
+      "Two candidates within 0.05 similarity: show both instead of guessing",
+      "Once the user opens one, it wins the next tie",
+    ], { size: 14 });
+    const rows = [
+      [th("Recommendation"), th("Trigger")],
+      ["Related group", "Cluster of 3 to 12 files not already in a workspace"],
+      ["Frequently used", "Files opened at least 3 times"],
+      ["Possible duplicate", "Similarity of 0.9 or more, or identical content hash"],
+      ["Needs organizing", "Indexed files with no category"],
+      ["Stale files", "Untouched for 90+ days and never opened"],
+    ];
+    s.addText("Workspace recommendations (rule-based, explainable)", { x: 6.5, y: 1.5, w: 6.25, h: 0.4, fontFace: HEAD, fontSize: 15, bold: true, color: TEXT_DARK, margin: 0 });
+    s.addTable(rows, tableStyle(rows, { x: 6.5, y: 2.05, w: 6.25, colW: [2.2, 4.05], rowH: 0.62, fontSize: 12.5 }));
+    s.addText("Rules, not the language model: reproducible, explainable, and no extra model calls. A workspace opens all its files in one click.", {
+      x: 6.5, y: 5.95, w: 6.25, h: 0.8, fontFace: BODY, fontSize: 12.5, italic: true, color: SLATE, margin: 0, valign: "top",
+    });
+  }
+
+  // ------------------------------------------------------------ 17c. retrieval
+  {
+    const s = contentSlide(pres, "Retrieval quality: measurement and fix", "Report section 5.5 - 27 labelled queries plus 4 off-topic ones, split into tuning and held-out halves");
+    const rows = [
+      [th("Approach"), th("Result"), th("Decision")],
+      ["Fixed cutoff of 0.55 (original)", "Correct file found for 20 of 27 queries; precision 0.63 (\"meeting\" returned nothing)", "Replaced"],
+      ["nomic task prefixes", "Top-1 21 to 24 of 27, but no cutoff separates a weak right answer (0.56) from junk (0.57); needs re-embedding", "Not adopted"],
+      ["LLM query expansion", "Top-1 fell to 13 of 27: the 3B model's descriptions drift", "Rejected"],
+      ["Near-best cutoff + keyword boost", "27 of 27 found (14 of 14 held-out); top-1 24 of 27 (13 of 14 held-out); precision 0.82; no re-embedding", "Adopted"],
+    ];
+    s.addTable(rows, tableStyle(rows, { x: 0.6, y: 1.55, w: 12.15, colW: [3.3, 6.85, 2.0], rowH: 0.7, fontSize: 13 }));
+    card(s, 0.6, 5.3, 12.15, 1.5, TEAL);
+    s.addText(
+      "Re-measured through the production endpoint: identical numbers. Weak matches are labelled low confidence and open never launches below 0.55. Residual: \"meeting notes\" still ranks workout_log first (it mentions \"the project meeting\"), and 3 of 4 off-topic file-shaped queries return labelled guesses.",
+      { x: 0.95, y: 5.4, w: 11.55, h: 1.3, fontFace: BODY, fontSize: 13.5, color: TEXT_DARK, margin: 0, valign: "middle" }
+    );
   }
 
   // ------------------------------------------------------------ 18. testing
   {
-    const s = contentSlide(pres, "Testing and verification");
+    const s = contentSlide(pres, "Testing and verification", "Report section 5.6");
     const rows = [
       [th("Level"), th("What was done"), th("Result")],
-      ["Unit and integration", "97 pytest tests over indexing, search, organizer, graph, memory, workspaces, NL routing and the HTTP API", "97 passed, offline"],
+      ["Unit and integration", "107 pytest tests: indexing, search and keyword boost, organizer, graph, memory, workspaces, intent routing, reset script, HTTP API", "107 passed, offline"],
       ["Continuous integration", "GitHub Actions runs the suite on every push (Linux)", "Passing"],
-      ["Test strength", "Key guards deliberately broken (short-filename rule, workspace-coverage filter) to confirm a test fails", "Each caught"],
-      ["Intent routing, real model", "32-message tuning set and a 26-message held-out set on llama3.2; prompt rewritten and compared", "Held-out 80% -> 88%"],
-      ["End to end, real models", "Multi-turn follow-ups, ambiguity then usage resolution, organize and revert on a new file", "As designed"],
+      ["Test strength", "Key guards deliberately broken to confirm a test fails", "Each caught"],
+      ["Intent routing, real model", "32-message tuning set and a 26-message held-out set on llama3.2; prompt rewritten and compared", "Held-out 80% to 88%"],
+      ["End to end, real models", "Follow-ups, ambiguity then usage resolution, organize and revert, graph rebuild on indexing", "As designed"],
+      ["Retrieval", "31-query labelled set with tuning and held-out halves", "27/27 found; top-1 24/27"],
       ["Real desktop shell", "Workspace Open all and click-to-open driven over WebView2's debug port", "No permission errors"],
     ];
-    s.addTable(rows, tableStyle(rows, { x: 0.6, y: 1.4, w: 12.15, colW: [2.7, 7.05, 2.4], rowH: 0.68, fontSize: 13.5 }));
-    s.addText("The tuning set reached 32/32 after the prompt change, but it was tuned against its own misses - the held-out figure is the honest one.", {
-      x: 0.6, y: 6.35, w: 12.15, h: 0.5, fontFace: BODY, fontSize: 12, italic: true, color: SLATE, margin: 0,
+    s.addTable(rows, tableStyle(rows, { x: 0.6, y: 1.5, w: 12.15, colW: [2.7, 6.85, 2.6], rowH: 0.58, fontSize: 12.5 }));
+    s.addText("The intent prompt scored 32/32 on the tuning set it was tuned against - the held-out figure is the honest one.", {
+      x: 0.6, y: 6.55, w: 12.15, h: 0.4, fontFace: BODY, fontSize: 12, italic: true, color: SLATE, margin: 0,
     });
   }
 
   // ------------------------------------------------------------ 19. limitations + next
   {
-    const s = contentSlide(pres, "Known limitations and remaining work");
-    cardText(s, 0.6, 1.4, 5.95, 5.4, "Known limitations (documented, not hidden)", [
-      "Short generic queries (\"meeting\") return nothing above the threshold, and \"meeting notes\" returns wrong files; descriptive queries work.",
-      "Suspected cause, not yet tested: nomic-embed-text expects search_query / search_document prefixes the pipeline does not add.",
-      "The 3B intent router misses borderline wording (\"which files should I archive\").",
-      "Clustering is conservative: some related files stay unlinked.",
-      "Similarity is pairwise - fine for tens to hundreds of files, not thousands.",
-    ], { size: 15, accent: "C0475B" });
-    cardText(s, 6.8, 1.4, 5.95, 5.4, "Remaining work (Monitoring III)", [
-      "Test the embedding-prefix hypothesis: re-embed, retune thresholds, compare retrieval quality.",
-      "Performance and scale testing on a larger vault; an approximate neighbour method if needed.",
-      "Final project report: results, discussion, conclusion, future scope.",
-      "Prepare and submit the accompanying research paper.",
-      "Final GitHub submission and installer hand-off.",
+    const s = contentSlide(pres, "Known limitations and remaining work", "Report sections 5.8 and 6");
+    cardText(s, 0.6, 1.5, 5.95, 5.3, "Known limitations (documented, not hidden)", [
+      "Very short queries are best-effort: a file that merely contains the word can outrank the answer (\"meeting notes\" ranks workout_log first)",
+      "Off-topic file-shaped queries return labelled low-confidence guesses; non-file requests are turned away by the intent router",
+      "The 3B intent router misses borderline wording (\"which files should I archive\")",
+      "Clustering is conservative: some related files stay unlinked",
+      "Similarity is pairwise and search scores every chunk: fine for hundreds of files, not thousands",
+    ], { size: 14, accent: "C0475B" });
+    cardText(s, 6.8, 1.5, 5.95, 5.3, "Remaining work (Monitoring III)", [
+      "Scale and performance: a larger vault, timing, an approximate neighbour method if needed",
+      "Retrieval: test the embedding-prefix option end to end, judged by the labelled evaluation set",
+      "Final project report: results, discussion, conclusion, future scope",
+      "Research paper, drawing on the measurements in this report",
+      "Final GitHub submission and installer hand-off",
     ], { size: 14.5 });
   }
 
