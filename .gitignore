@@ -23,6 +23,6 @@ Thumbs.db
 .env
 
 # Office auto-repair artifacts
-*[Repaired]*
+*\[Repaired\]*
 
 CLAUDE.md
