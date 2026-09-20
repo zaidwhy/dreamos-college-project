@@ -1,22 +1,37 @@
-from dataclasses import dataclass, field
+import re
+from dataclasses import asdict, dataclass, field, replace
 
-from app import organizer, search
+from app import context_memory, knowledge_graph, organizer, search, workspace
 from app.config import settings
 from app.ollama_client import generate_json
 
-INTENTS = ["search", "open", "organize", "other"]
+INTENTS = ["search", "open", "related", "workspace", "organize", "other"]
 
 SYSTEM_PROMPT = (
-    "You classify what a user wants from a semantic file-management assistant. Respond with "
-    'JSON only, matching this shape exactly: {"intent": one of ["search", "open", "organize", "other"], '
-    '"query": "the search/open target text, empty string if intent is \'other\'"}. '
-    "Use 'open' when the user wants to directly open/launch/view a specific file right now "
-    "(e.g. \"open my resume\", \"open the invoice\") - this differs from 'search', which is "
-    "for exploring or recalling what exists (e.g. \"find my resume\", \"do I have anything "
-    "about invoices\") without necessarily wanting it opened. "
-    "Use 'organize' when the user wants files tagged, categorized, sorted, or cleaned up. "
-    "Use 'other' for anything else (greetings, unrelated questions)."
+    "You route requests for a local file-management assistant. Reply with JSON only, exactly: "
+    '{"intent": "search" | "open" | "related" | "workspace" | "organize" | "other", '
+    '"query": "the file topic or workspace name from the message, empty string if none", '
+    '"refers_to_previous": true | false}\n'
+    "Intents:\n"
+    "- search: the user wants to find, list, show or ask about files on a topic. "
+    'Examples: "find my tax documents", "show me anything about the trip", "do I have notes on the budget".\n'
+    "- open: the user wants ONE specific file launched right now. "
+    'Examples: "open my passport scan", "pull up the lease".\n'
+    "- related: the user wants files connected to, or similar to, one specific file. "
+    'Examples: "what goes with the budget sheet", "files like my thesis draft".\n'
+    "- workspace: the user asks for advice or suggestions about how to group, tidy or manage their files, "
+    "asks about workspaces, or wants to open a named workspace. "
+    'Examples: "what do you recommend for my files", "how should I group these", "show my workspaces", '
+    '"open the thesis workspace".\n'
+    "- organize: the user ORDERS the assistant to categorize, sort or tag their files. "
+    'Examples: "organize everything", "sort these into folders". '
+    "A question asking what to do or what is recommended is workspace, not organize.\n"
+    '- other: greetings, thanks, or anything not about files. Examples: "hi", "what time is it".\n'
+    "If earlier conversation is shown, set refers_to_previous to true only when the new message points back "
+    'at files already shown ("open it", "the second one", "what\'s related to that"); otherwise false.'
 )
+
+_OPEN_VERB = re.compile(r"^\s*(please\s+)?(open|launch|start|view)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -26,16 +41,55 @@ class NLResponse:
     search_results: list[search.SearchHit] = field(default_factory=list)
     organize_suggestions: list[dict] = field(default_factory=list)
     open_path: str | None = None
+    related: list[dict] = field(default_factory=list)
+    recommendations: list[dict] = field(default_factory=list)
+    workspaces: list[dict] = field(default_factory=list)
+    open_paths: list[str] = field(default_factory=list)
 
 
-def handle_message(user_message: str) -> NLResponse:
-    classification = generate_json(user_message, system=SYSTEM_PROMPT)
+def handle_message(user_message: str, session_id: str | None = None) -> NLResponse:
+    """Classifies one message and routes it. With a session_id the conversation is remembered,
+    so follow-ups ("open it", "the second one") resolve against what was last shown.
+    """
+    prompt = user_message
+    if session_id:
+        context = context_memory.format_for_prompt(session_id)
+        if context:
+            prompt = f"{context}\n\nNew user message: {user_message}"
+
+    classification = generate_json(prompt, system=SYSTEM_PROMPT)
     intent = classification.get("intent", "other")
     if intent not in INTENTS:
         intent = "other"
+    query = classification.get("query") or user_message
 
+    referenced = None
+    if session_id:
+        # A bare "open it" is unambiguous even if the model filed it under another intent.
+        if _OPEN_VERB.match(user_message) and intent in ("search", "other"):
+            if context_memory.resolve_reference(session_id, user_message):
+                intent = "open"
+        if intent in ("open", "related"):
+            referenced = context_memory.resolve_reference(
+                session_id, user_message, bool(classification.get("refers_to_previous"))
+            )
+
+    response = _route(intent, query, referenced)
+
+    if session_id:
+        context_memory.add_turn(session_id, "user", user_message, intent)
+        context_memory.add_turn(
+            session_id,
+            "assistant",
+            response.message,
+            intent,
+            [hit.path for hit in response.search_results],
+        )
+    return response
+
+
+def _route(intent: str, query: str, referenced: str | None) -> NLResponse:
     if intent == "search":
-        query = classification.get("query") or user_message
         hits = search.semantic_search(query)
         if not hits:
             return NLResponse(
@@ -49,30 +103,13 @@ def handle_message(user_message: str) -> NLResponse:
         )
 
     if intent == "open":
-        query = classification.get("query") or user_message
-        hits = search.semantic_search(query, top_k=3)
-        if not hits:
-            return NLResponse(
-                intent=intent,
-                message=f"No file found matching '{query}'.",
-            )
-        best = hits[0]
-        runner_up = hits[1] if len(hits) > 1 else None
-        if runner_up is not None and (best.similarity - runner_up.similarity) < settings.open_ambiguity_margin:
-            return NLResponse(
-                intent=intent,
-                message=(
-                    f"Found {len(hits)} files that could match '{query}' - too close to pick "
-                    "automatically. Did you mean one of these?"
-                ),
-                search_results=hits,
-            )
-        return NLResponse(
-            intent=intent,
-            message=f"Opening {best.name}...",
-            search_results=[best],
-            open_path=best.abs_path,
-        )
+        return _open(query, referenced)
+
+    if intent == "related":
+        return _related(query, referenced)
+
+    if intent == "workspace":
+        return _workspace(query)
 
     if intent == "organize":
         unorganized = organizer.preview_unorganized()
@@ -93,5 +130,101 @@ def handle_message(user_message: str) -> NLResponse:
 
     return NLResponse(
         intent=intent,
-        message="I can help you search your files by meaning, or organize unsorted files. Try asking to find or organize something.",
+        message=(
+            "I can find files by meaning, open them, show what's related, suggest workspaces, "
+            "or organize unsorted files. Try asking for one of those."
+        ),
+    )
+
+
+def _open_response(hit: search.SearchHit, note: str = "") -> NLResponse:
+    context_memory.record_open(hit.path)
+    return NLResponse(
+        intent="open",
+        message=f"Opening {hit.name}{note}...",
+        search_results=[hit],
+        open_path=hit.abs_path,
+    )
+
+
+def _open(query: str, referenced: str | None) -> NLResponse:
+    if referenced:
+        hit = search.hit_for_path(referenced)
+        if hit:
+            return _open_response(hit)
+
+    hits = search.semantic_search(query, top_k=3)
+    if not hits:
+        return NLResponse(intent="open", message=f"No file found matching '{query}'.")
+
+    best = hits[0]
+    tied = [h for h in hits if best.similarity - h.similarity < settings.open_ambiguity_margin]
+    if len(tied) > 1:
+        # A close call. Files the user actually opens before are the best tie-breaker.
+        preferred = context_memory.prefer_most_used(tied)
+        if preferred is None:
+            return NLResponse(
+                intent="open",
+                message=(
+                    f"Found {len(hits)} files that could match '{query}' - too close to pick "
+                    "automatically. Did you mean one of these?"
+                ),
+                search_results=hits,
+            )
+        return _open_response(preferred, " (the one you open most)")
+    return _open_response(best)
+
+
+def _related(query: str, referenced: str | None) -> NLResponse:
+    target = referenced
+    if target is None:
+        hits = search.semantic_search(query, top_k=1)
+        target = hits[0].path if hits else None
+    source = search.hit_for_path(target) if target else None
+    if source is None:
+        return NLResponse(intent="related", message=f"I couldn't find a file matching '{query}' to look up.")
+
+    related = knowledge_graph.related_files(source.path)
+    if not related:
+        return NLResponse(
+            intent="related",
+            message=f"{source.name} isn't linked to any other file in the knowledge graph.",
+        )
+
+    cards = []
+    for r in related:
+        hit = search.hit_for_path(r.path)
+        if hit:
+            cards.append(replace(hit, similarity=r.weight, snippet=hit.summary or ""))
+    return NLResponse(
+        intent="related",
+        message=f"{len(cards)} file(s) related to {source.name}.",
+        search_results=cards,
+        related=[asdict(r) for r in related],
+    )
+
+
+def _workspace(query: str) -> NLResponse:
+    match = workspace.find_workspace(query) if query else None
+    if match:
+        paths = workspace.open_workspace(match["id"]) or []
+        if not paths:
+            return NLResponse(intent="workspace", message=f"Workspace '{match['name']}' has no files left.")
+        return NLResponse(
+            intent="workspace",
+            message=f"Opening workspace '{match['name']}' ({len(paths)} file(s))...",
+            workspaces=[match],
+            open_paths=paths,
+        )
+
+    recommendations = workspace.recommend()
+    workspaces = workspace.list_workspaces()
+    return NLResponse(
+        intent="workspace",
+        message=(
+            f"You have {len(workspaces)} workspace(s) and {len(recommendations)} suggestion(s) "
+            "based on how your files relate and how you use them."
+        ),
+        recommendations=[asdict(r) for r in recommendations],
+        workspaces=workspaces,
     )

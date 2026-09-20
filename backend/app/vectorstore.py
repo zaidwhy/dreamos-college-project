@@ -45,6 +45,23 @@ def upsert_chunks(path: str, chunk_ids: list[str], chunks: list[str], embeddings
     )
 
 
+def get_file_vectors() -> dict[str, list[float]]:
+    """One vector per file: the mean of its chunk embeddings, keyed by vault-relative path."""
+    data = get_collection().get(include=["embeddings", "metadatas"])
+    sums: dict[str, list[float]] = {}
+    counts: dict[str, int] = {}
+    for embedding, metadata in zip(data["embeddings"], data["metadatas"]):
+        path = metadata["path"]
+        values = [float(x) for x in embedding]
+        if path not in sums:
+            sums[path] = values
+            counts[path] = 1
+        else:
+            sums[path] = [a + b for a, b in zip(sums[path], values)]
+            counts[path] += 1
+    return {path: [x / counts[path] for x in total] for path, total in sums.items()}
+
+
 def query(embedding: list[float], top_k: int) -> dict:
     collection = get_collection()
     return collection.query(query_embeddings=[embedding], n_results=top_k)

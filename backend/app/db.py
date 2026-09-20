@@ -24,6 +24,50 @@ CREATE TABLE IF NOT EXISTS files (
 
 CREATE INDEX IF NOT EXISTS idx_files_content_hash ON files(content_hash);
 CREATE INDEX IF NOT EXISTS idx_files_category ON files(category);
+
+-- Everything below is keyed on files.id, never files.path: organizer apply/revert renames
+-- paths, and an id survives that rename so none of these tables needs a re-sync after a move.
+
+CREATE TABLE IF NOT EXISTS file_edges (
+    src_id INTEGER NOT NULL REFERENCES files(id) ON DELETE CASCADE,
+    dst_id INTEGER NOT NULL REFERENCES files(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    weight REAL NOT NULL,
+    PRIMARY KEY (src_id, dst_id, kind)
+);
+CREATE INDEX IF NOT EXISTS idx_edges_dst ON file_edges(dst_id);
+
+CREATE TABLE IF NOT EXISTS conversation_turns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    message TEXT NOT NULL,
+    intent TEXT,
+    file_ids TEXT,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_turns_session ON conversation_turns(session_id, id);
+
+CREATE TABLE IF NOT EXISTS usage_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    file_id INTEGER NOT NULL REFERENCES files(id) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_usage_file ON usage_events(file_id);
+
+CREATE TABLE IF NOT EXISTS workspaces (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS workspace_files (
+    workspace_id INTEGER NOT NULL REFERENCES workspaces(id) ON DELETE CASCADE,
+    file_id INTEGER NOT NULL REFERENCES files(id) ON DELETE CASCADE,
+    PRIMARY KEY (workspace_id, file_id)
+);
 """
 
 

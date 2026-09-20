@@ -23,6 +23,12 @@ def isolated_env(tmp_path, monkeypatch):
     monkeypatch.setattr(settings, "chroma_dir", tmp_path / "data" / "chroma")
     monkeypatch.setattr(settings, "sqlite_path", tmp_path / "data" / "dreamos.db")
     settings.data_dir.mkdir(parents=True, exist_ok=True)
+    # Production centers vectors and uses centered-scale thresholds. Tests use small hand-built
+    # vectors whose raw cosines are easy to reason about, so they run on the raw scale; the
+    # centering step itself has dedicated tests that turn it back on.
+    monkeypatch.setattr(settings, "graph_center_vectors", False)
+    monkeypatch.setattr(settings, "graph_similarity_threshold", 0.75)
+    monkeypatch.setattr(settings, "graph_duplicate_threshold", 0.95)
 
     init_db()
     yield vault_dir

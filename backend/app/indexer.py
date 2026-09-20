@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
-from app import vectorstore
+from app import knowledge_graph, vectorstore
 from app.config import settings
 from app.db import connection
 from app.extractors import ExtractionError, chunk_text, extract_text
@@ -16,6 +16,7 @@ class IndexResult:
     indexed: list[str] = field(default_factory=list)
     skipped_unchanged: list[str] = field(default_factory=list)
     errors: dict[str, str] = field(default_factory=dict)
+    graph_edges: int | None = None
 
 
 def _hash_file(path: Path) -> str:
@@ -89,5 +90,10 @@ def index_vault(vault_dir: Path | None = None) -> IndexResult:
                 result.indexed.append(rel_path)
             except (ExtractionError, OllamaError) as exc:
                 result.errors[rel_path] = str(exc)
+
+    # Rebuilt only after the write transaction above has committed - a second connection
+    # writing edges while the indexer's own transaction is still open would hit a SQLite lock.
+    if result.indexed:
+        result.graph_edges = knowledge_graph.rebuild()["edges"]
 
     return result

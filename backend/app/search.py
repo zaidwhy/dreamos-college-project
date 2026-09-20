@@ -17,6 +17,27 @@ class SearchHit:
     abs_path: str
 
 
+def hit_for_path(path: str) -> SearchHit | None:
+    """Builds a hit for a file the user referred to explicitly (e.g. "open it"), so no
+    similarity score applies - it is reported as a full 1.0 match.
+    """
+    with connection() as conn:
+        row = conn.execute(
+            "SELECT name, category, summary FROM files WHERE path = ?", (path,)
+        ).fetchone()
+    if row is None:
+        return None
+    return SearchHit(
+        path=path,
+        name=row["name"],
+        category=row["category"],
+        summary=row["summary"],
+        snippet=row["summary"] or "",
+        similarity=1.0,
+        abs_path=str((settings.vault_dir / path).resolve()),
+    )
+
+
 def semantic_search(query: str, top_k: int | None = None) -> list[SearchHit]:
     top_k = top_k or settings.search_top_k
     query_embedding = embed(query)

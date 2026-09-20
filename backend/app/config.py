@@ -27,6 +27,30 @@ class Settings(BaseSettings):
     # CV) must block auto-open rather than silently launching the wrong person's file.
     open_ambiguity_margin: float = 0.05
 
+    # Knowledge Graph. nomic-embed-text vectors share a large common direction, so raw doc-vs-doc
+    # cosine is compressed (demo vault: median 0.52, max 0.83) and unrelated pairs outscore real
+    # relatives. Subtracting the corpus mean first spreads scores out (unrelated ~0, related
+    # 0.25-0.4), and the thresholds below are on that centered scale. Measured on the demo vault.
+    graph_center_vectors: bool = True
+    graph_similarity_threshold: float = 0.25
+    graph_top_k: int = 3
+    graph_min_shared_tags: int = 2
+    graph_duplicate_threshold: float = 0.9
+
+    # Context Memory Engine
+    memory_turns_in_prompt: int = 6
+
+    # Intelligent Workspace Manager
+    workspace_min_cluster_size: int = 3
+    # Clusters come from average-linkage merging: two groups join only while the *average* edge
+    # weight between all their member pairs (a missing edge counts as 0) stays above this. A single
+    # bridge edge between two tight groups averages out to near zero, so they cannot chain together.
+    graph_cluster_min_link: float = 0.12
+    workspace_max_cluster_size: int = 12  # a bigger "cluster" means the graph chained unrelated files
+    workspace_max_recommendations_per_kind: int = 5
+    frequent_open_threshold: int = 3
+    stale_days: int = 90
+
     supported_extensions: tuple[str, ...] = (
         ".txt",
         ".md",
