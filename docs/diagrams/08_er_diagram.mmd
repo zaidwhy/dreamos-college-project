@@ -21,4 +21,40 @@ erDiagram
         vector embedding
         json metadata
     }
+    FILE_EDGES {
+        int src_id PK
+        int dst_id PK
+        text kind PK
+        real weight
+    }
+    CONVERSATION_TURNS {
+        int id PK
+        text session_id
+        text role
+        text message
+        text intent
+        json file_ids
+        text created_at
+    }
+    USAGE_EVENTS {
+        int id PK
+        int file_id FK
+        text kind
+        text created_at
+    }
+    WORKSPACES {
+        int id PK
+        text name UK
+        text description
+        text created_at
+    }
+    WORKSPACE_FILES {
+        int workspace_id PK
+        int file_id PK
+    }
     FILES ||--o| VECTOR_ENTRIES : "indexed as"
+    FILES ||--o{ FILE_EDGES : "linked by src_id / dst_id"
+    FILES ||--o{ USAGE_EVENTS : "opened"
+    FILES ||--o{ WORKSPACE_FILES : "member of"
+    WORKSPACES ||--o{ WORKSPACE_FILES : "contains"
+    FILES }o..o{ CONVERSATION_TURNS : "shown (ids in JSON)"

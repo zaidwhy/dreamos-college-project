@@ -1,10 +1,12 @@
 classDiagram
     class SearchHit {
       +str path
-      +str abs_path
       +str name
-      +float score
+      +str category
+      +str summary
       +str snippet
+      +float similarity
+      +str abs_path
     }
     class NLResponse {
       +str intent
@@ -12,6 +14,10 @@ classDiagram
       +List~SearchHit~ search_results
       +List~dict~ organize_suggestions
       +str open_path
+      +List~dict~ related
+      +List~dict~ recommendations
+      +List~dict~ workspaces
+      +List~str~ open_paths
     }
     class OrganizeSuggestion {
       +str path
@@ -20,14 +26,32 @@ classDiagram
       +str category
       +str reasoning
     }
+    class RelatedFile {
+      +str path
+      +List~str~ kinds
+      +float weight
+    }
+    class Recommendation {
+      +str kind
+      +str title
+      +str detail
+      +List~str~ paths
+      +str action
+      +str workspace_name
+    }
+    class Turn {
+      +str role
+      +str message
+      +str intent
+      +List~str~ paths
+    }
     class Settings {
       +Path vault_dir
-      +Path chroma_dir
-      +Path sqlite_path
-      +str embed_model
-      +str llm_model
       +float search_similarity_threshold
-      +int search_top_k
+      +float graph_similarity_threshold
+      +float graph_cluster_min_link
+      +float open_ambiguity_margin
+      +int frequent_open_threshold
     }
     class OllamaClient {
       +embed(text) List~float~
@@ -36,5 +60,9 @@ classDiagram
 
     NLResponse "1" --> "*" SearchHit : search_results
     NLResponse "1" --> "*" OrganizeSuggestion : organize_suggestions
-    NLResponse ..> OllamaClient : uses
+    NLResponse "1" --> "*" RelatedFile : related
+    NLResponse "1" --> "*" Recommendation : recommendations
+    NLResponse ..> OllamaClient : classifies via
+    NLResponse ..> Turn : saved as
     SearchHit ..> Settings : reads
+    Recommendation ..> Settings : thresholds

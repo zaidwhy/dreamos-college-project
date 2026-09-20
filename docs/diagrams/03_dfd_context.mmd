@@ -4,8 +4,8 @@ flowchart LR
     OLLAMA[("Ollama\nLocal LLM Runtime")]
     VAULT[("File Vault")]
 
-    USER -->|"natural language request"| DREAMOS
-    DREAMOS -->|"search results / opened file / organize summary"| USER
+    USER -->|"natural language request,\nclicks, workspace actions"| DREAMOS
+    DREAMOS -->|"search results, related files,\nworkspace suggestions, opened files,\norganize summaries"| USER
     DREAMOS -->|"embed / generate requests"| OLLAMA
     OLLAMA -->|"embeddings / JSON completions"| DREAMOS
     DREAMOS -->|"read + move files"| VAULT

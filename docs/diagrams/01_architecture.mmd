@@ -1,15 +1,18 @@
 flowchart TB
     subgraph DESKTOP["Desktop Application (Tauri + React)"]
-        UI["Chat UI (App.tsx)"]
-        APICLIENT["Typed fetch client (api.ts)"]
+        UI["Chat / Knowledge graph / Workspaces views"]
+        APICLIENT["Typed fetch client (api.ts)\nsession id in local storage"]
         OPENER["Tauri opener plugin"]
     end
 
     subgraph BACKEND["Backend Service - FastAPI, 127.0.0.1:8420"]
         ROUTES["REST routes (main.py)"]
-        NLI["NL Interface\nintent classification"]
+        NLI["NL Interface\nintent classification + routing"]
         SEARCH["Semantic Search Engine"]
         ORG["AI File Organizer"]
+        KG["Knowledge Graph"]
+        CME["Context Memory Engine"]
+        IWM["Workspace Manager"]
         INDEXER["Indexer"]
     end
 
@@ -18,7 +21,7 @@ flowchart TB
     end
 
     subgraph STORE["Storage"]
-        SQLITE[("SQLite\nfile metadata")]
+        SQLITE[("SQLite\nfiles, edges, turns,\nusage, workspaces")]
         CHROMA[("ChromaDB\nvector store")]
         VAULT[["demo-vault\nsandboxed files"]]
     end
@@ -26,20 +29,32 @@ flowchart TB
     UI --> APICLIENT --> ROUTES
     ROUTES --> NLI
     ROUTES --> INDEXER
+    ROUTES --> KG
+    ROUTES --> IWM
     NLI --> SEARCH
     NLI --> ORG
-    NLI -.open intent.-> APICLIENT
+    NLI --> KG
+    NLI --> IWM
+    NLI <--> CME
+    IWM --> KG
+    IWM --> CME
+    INDEXER --> KG
     APICLIENT -.open_path.-> OPENER
     OPENER -.launches.-> VAULT
 
+    NLI --> OLLAMA
     SEARCH --> OLLAMA
     ORG --> OLLAMA
-    NLI --> OLLAMA
     INDEXER --> OLLAMA
 
     SEARCH --> CHROMA
     INDEXER --> CHROMA
+    KG --> CHROMA
     INDEXER --> SQLITE
     ORG --> SQLITE
+    KG --> SQLITE
+    CME --> SQLITE
+    IWM --> SQLITE
     ORG --> VAULT
     INDEXER --> VAULT
+    KG --> VAULT

@@ -6,6 +6,12 @@ flowchart LR
     UC4(["Apply AI organization"])
     UC5(["Revert organization"])
     UC6(["Index the vault"])
+    UC7(["Ask a follow-up question"])
+    UC8(["Find related files"])
+    UC9(["Explore the knowledge graph"])
+    UC10(["Create a workspace from a suggestion"])
+    UC11(["Open all files of a workspace"])
+    UC12(["Start a new conversation"])
 
     actor --> UC1
     actor --> UC2
@@ -13,6 +19,15 @@ flowchart LR
     actor --> UC4
     actor --> UC5
     actor --> UC6
+    actor --> UC7
+    actor --> UC8
+    actor --> UC9
+    actor --> UC10
+    actor --> UC11
+    actor --> UC12
 
     UC4 -.includes.-> UC3
     UC2 -.includes.-> UC1
+    UC7 -.extends.-> UC2
+    UC7 -.extends.-> UC8
+    UC10 -.includes.-> UC9

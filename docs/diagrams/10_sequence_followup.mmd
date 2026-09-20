@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor U as User
+    participant UI as Chat UI
+    participant API as FastAPI /chat
+    participant NLI as NL Interface
+    participant CME as Context Memory
+    participant LLM as Ollama llama3.2
+    participant DB as SQLite
+
+    U->>UI: "find my invoices"
+    UI->>API: message + session_id
+    API->>NLI: handle_message
+    NLI->>LLM: classify (intent=search)
+    NLI-->>API: 3 result files
+    NLI->>CME: save turns with file ids
+    CME->>DB: conversation_turns
+    API-->>UI: results
+
+    U->>UI: "open the second one"
+    UI->>API: message + session_id
+    API->>NLI: handle_message
+    NLI->>CME: recent turns for the prompt
+    CME->>DB: read turns
+    NLI->>LLM: classify with conversation context
+    LLM-->>NLI: intent=open, refers_to_previous
+    NLI->>CME: resolve_reference (ordinal rule)
+    CME-->>NLI: second file of the last results
+    NLI->>CME: record_open (usage)
+    NLI-->>API: open_path
+    API-->>UI: open_path
+    UI->>U: launches file via Tauri opener

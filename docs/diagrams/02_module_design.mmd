@@ -1,18 +1,19 @@
 flowchart LR
     classDef built fill:#cfe8cf,stroke:#2e7d32,stroke-width:2px,color:#1b1b1b
-    classDef deferred fill:#eeeeee,stroke:#999999,stroke-width:1px,stroke-dasharray: 5 5,color:#555555
 
-    NLI["Natural Language Interface\n(built)"]:::built
-    SSE["Semantic Search Engine\n(built)"]:::built
-    AFO["AI File Organizer\n(built)"]:::built
-    KG["Knowledge Graph\n(deferred)"]:::deferred
-    CME["Context Memory Engine\n(deferred)"]:::deferred
-    IWM["Intelligent Workspace Manager\n(deferred)"]:::deferred
+    NLI["Natural Language Interface\nintent routing"]:::built
+    SSE["Semantic Search Engine\nvector similarity"]:::built
+    AFO["AI File Organizer\ncategorize, apply, revert"]:::built
+    KG["Knowledge Graph\nsimilar, references, shared tags"]:::built
+    CME["Context Memory Engine\nsessions, follow-ups, usage"]:::built
+    IWM["Intelligent Workspace Manager\nrecommendations, workspaces"]:::built
 
     NLI --> SSE
     NLI --> AFO
-    SSE -.future.-> KG
-    AFO -.future.-> KG
-    NLI -.future.-> CME
-    KG -.future.-> IWM
-    CME -.future.-> IWM
+    NLI --> KG
+    NLI --> IWM
+    CME <--> NLI
+    SSE --> KG
+    AFO --> KG
+    KG --> IWM
+    CME --> IWM

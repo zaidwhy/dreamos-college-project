@@ -37,7 +37,7 @@ function pngDims(file) {
 }
 
 function iconCircle(slide, icon, x, y, d, circleColor, iconColor) {
-  slide.addShape(pptxgen.ShapeType ? pptxgen.ShapeType.oval : "oval", {
+  slide.addShape("ellipse", {
     x, y, w: d, h: d, fill: { color: circleColor }, line: { type: "none" },
   });
   const pad = d * 0.26;

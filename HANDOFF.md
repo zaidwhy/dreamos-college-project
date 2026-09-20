@@ -58,8 +58,16 @@ Built 2026-09-20 for the Monitoring on the 24th:
   does not add. Fixing it means re-embedding the vault and retuning `search_similarity_threshold`
   (0.55) and the graph thresholds - a decision for Zaid, deliberately not done here.
 - One cosmetic label overlap in the graph view between two unlinked files at the bottom.
-- The report (`docs/DreamOS-Project-Monitoring-I.docx`) and deck still describe the 50% state.
-  `docs/build_report.js` / `docs/build_pptx.js` regenerate them.
+- **Monitoring II deck is done:** `docs/DreamOS-Project-Monitoring-II.pptx` (20 slides: full report
+  content updated to the finished system). Regenerate: `NODE_PATH="$(npm root -g)" node
+  docs/build_pptx_m2.js`. Diagrams in `docs/diagrams/` were rewritten for all six modules.
+- **The Word report is NOT updated:** `docs/DreamOS-Project-Monitoring-I.docx` still describes the
+  50% state (3 of 6 modules). `docs/build_report.js` regenerates it; its text needs the new status,
+  requirement table, module table, ER tables and testing section.
+- pptxgenjs gotcha, found the hard way: `addShape("oval")` is not a valid shape name (use
+  `"ellipse"`). Viewers tolerate it but real PowerPoint calls the file corrupt, which is why an
+  earlier deck produced a `[Repaired]` copy. Always confirm a generated .pptx opens via PowerPoint
+  COM (`$app.Presentations.Open(...)`); it can also `Export` slide PNGs for visual QA.
 - Nothing prunes DB rows for deleted files except `backend/scripts/reset_demo_state.py`.
 
 ## How to run the demo
