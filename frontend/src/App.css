@@ -259,3 +259,232 @@ body,
   opacity: 0.5;
   cursor: default;
 }
+
+/* ---------- navigation ---------- */
+
+.tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.tab {
+  padding: 7px 14px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--text);
+}
+
+.tab-active {
+  background: var(--accent-dim);
+  border-color: #47548c;
+  color: var(--text);
+}
+
+.view-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px 28px;
+}
+
+.panel-message {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 2px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.section-gap {
+  margin-top: 28px;
+}
+
+.btn-inline {
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+}
+
+.pill-kind-cluster {
+  background: #1f3a30;
+  color: #6fd08c;
+}
+
+.pill-kind-frequent {
+  background: #3a3220;
+  color: #f0b86e;
+}
+
+.pill-kind-duplicate {
+  background: #3d2626;
+  color: #e08585;
+}
+
+.pill-kind-unorganized {
+  background: #2c2a44;
+  color: #b0a0ff;
+}
+
+.pill-kind-stale {
+  background: #23272f;
+  color: var(--text-muted);
+}
+
+.workspace-panel .status-muted {
+  display: block;
+  margin: 8px 0;
+}
+
+.composer .composer-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* ---------- knowledge graph ---------- */
+
+.graph-view {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.graph-legend {
+  display: flex;
+  gap: 16px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.graph-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 16px;
+  align-items: start;
+}
+
+.graph-canvas {
+  width: 100%;
+  height: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.graph-node {
+  cursor: pointer;
+}
+
+.graph-label {
+  font-size: 11px;
+  fill: var(--text-muted);
+  pointer-events: none;
+  /* halo in the panel colour keeps the name readable where an edge passes underneath */
+  paint-order: stroke;
+  stroke: var(--bg-elevated);
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+
+.graph-label-active {
+  fill: var(--text);
+  font-weight: 600;
+}
+
+.graph-side {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.neighbour-list,
+.category-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.neighbour-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.neighbour-kinds {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.link-button {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--accent);
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.category-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+@media (max-width: 900px) {
+  .graph-body {
+    grid-template-columns: 1fr;
+  }
+}
