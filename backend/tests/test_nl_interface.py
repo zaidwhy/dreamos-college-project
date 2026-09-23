@@ -297,3 +297,66 @@ def test_open_never_launches_a_low_confidence_match(isolated_env, fake_embed, fa
     assert [h.path for h in response.search_results] == ["maybe.txt"]  # offered, not opened
     assert "nothing opened" in response.message
     assert context_memory.open_counts() == {}
+
+
+# --------------------------------------------------- stale context vs. a real new topic
+# Reproduced live 2026-09-23: "find my invoices" then "what's related to my resume" answered
+# about an invoice file, because the model set refers_to_previous=True for the second message
+# even though "resume" is a real, independent, confidently-matched topic. A confident direct
+# match on the extracted query must always win over that flag; the flag is a last resort only.
+
+
+@pytest.fixture
+def invoice_and_resume_vault(invoice_vault, fake_embed):
+    vault = invoice_vault
+    content = "resume with work experience"
+    (vault / "resume.txt").write_text(content, encoding="utf-8")
+    fake_embed[content] = [0.0, 0.0, 1.0, 0.0]  # orthogonal to the invoice cluster
+    fake_embed["resume"] = [0.0, 0.0, 1.0, 0.0]
+    index_vault(vault)
+    return vault
+
+
+def test_related_prefers_a_confident_match_over_a_stale_context_reference(
+    invoice_and_resume_vault, fake_generate_json
+):
+    knowledge_graph.rebuild()
+    _search_first(fake_generate_json)  # shows a.txt, b.txt, c.txt (invoices)
+
+    # The model wrongly flags this as a follow-up, exactly as observed live.
+    fake_generate_json.append({"intent": "related", "query": "resume", "refers_to_previous": True})
+    response = handle_message("what's related to my resume", session_id="s")
+
+    assert response.intent == "related"
+    assert "resume.txt" in response.message  # correctly targeted, whether or not it has links
+    assert "invoice" not in response.message.lower()
+
+
+def test_open_prefers_a_confident_match_over_a_stale_context_reference(
+    invoice_and_resume_vault, fake_generate_json
+):
+    _search_first(fake_generate_json)  # shows a.txt, b.txt, c.txt (invoices)
+
+    fake_generate_json.append({"intent": "open", "query": "resume", "refers_to_previous": True})
+    response = handle_message("open my resume", session_id="s")
+
+    assert response.open_path is not None
+    assert response.open_path.endswith("resume.txt")
+
+
+def test_related_falls_back_to_context_when_the_query_alone_is_not_confident(
+    invoice_and_resume_vault, fake_embed, fake_generate_json
+):
+    knowledge_graph.rebuild()
+    _search_first(fake_generate_json)  # shows a.txt, b.txt, c.txt; a.txt becomes "the topic"
+
+    # A phrasing the deterministic rules do not cover, and one that on its own matches nothing -
+    # only here should the model's refers_to_previous flag be allowed to decide.
+    fake_embed["the earlier thing"] = [0.001, 0.002, 0.003, 0.004]
+    fake_generate_json.append(
+        {"intent": "related", "query": "the earlier thing", "refers_to_previous": True}
+    )
+    response = handle_message("what about the earlier thing", session_id="s")
+
+    assert response.intent == "related"
+    assert "related to a.txt" in response.message

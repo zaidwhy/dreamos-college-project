@@ -38,8 +38,10 @@ Built 2026-09-20 for the Monitoring on the 24th:
 - **Intent prompt was evaluated, not guessed:** 32-message set plus a 26-message held-out set on
   real `llama3.2`. Old prompt 80% held-out, new prompt 88% (23 of 26). Remaining misses are
   borderline ("which files should I archive" -> organize).
-- Context follow-ups are matched by rules first; the model's `refers_to_previous` flag is only a
-  fallback. Bare "open it" is forced to `open` even if the model says `search`.
+- Context follow-ups are matched by rules first (ordinals, bare "it"/"that"); the model's
+  `refers_to_previous` flag is only a last resort, tried after a confident direct search on the
+  extracted `query` has already failed (`_open`/`_related` in `nl_interface.py`, fixed 2026-09-23 -
+  see below). Bare "open it" is forced to `open` even if the model says `search`.
 
 ## Bugs found and fixed while doing this
 
@@ -49,6 +51,16 @@ Built 2026-09-20 for the Monitoring on the 24th:
   were re-pulled. Check `ollama list` before any demo.
 - A long-running backend started before an endpoint was added returns 404 for it (no `--reload`).
   Restart it after backend changes. (The UI swallows failed usage reports on purpose.)
+- **Stale context override, FIXED 2026-09-23.** Reported live via screenshot: "find my invoices"
+  then "what's related to my resume" answered about an invoice file. Root cause, confirmed by
+  calling the classifier directly: `llama3.2` deterministically sets `refers_to_previous: true` for
+  "what's related to my resume" (it echoes the "what's related to X" example in the system prompt),
+  even though `query: "resume"` is correctly extracted and a real, independently-searchable topic.
+  `_open`/`_related` trusted that flag unconditionally, via a single `referenced` value computed in
+  `handle_message`. Fixed by splitting it into `referenced` (rule-based only, trusted first) and
+  `weak_referenced` (also accepts the model flag, tried only if a direct search on `query` comes up
+  empty or below `search_similarity_threshold`). Reverting the precedence made the new regression
+  tests fail (confirmed), so they have teeth. 3 new tests in `test_nl_interface.py`; 110 total.
 
 ## Known issues / open items
 

@@ -461,7 +461,7 @@ const doc = new Document({
           [2300, 5260, 1800],
           ["Level", "What was done", "Result"],
           [
-            ["Unit and integration", "107 pytest tests covering indexing, search and the keyword boost, the organizer, the graph, memory, workspaces, intent routing, the reset script, and the HTTP API", "107 passed, offline"],
+            ["Unit and integration", "110 pytest tests covering indexing, search and the keyword boost, the organizer, the graph, memory, workspaces, intent routing, the reset script, and the HTTP API", "110 passed, offline"],
             ["Continuous integration", "A GitHub Actions workflow runs the suite on every push (Linux)", "Passing"],
             ["Test strength", "Key guards were deliberately broken (the short-filename rule for references, the workspace-coverage filter) to confirm a test fails", "Each caught"],
             ["Intent routing, real model", "32-message tuning set and a 26-message held-out set on llama3.2. The prompt was rewritten; it scored 32 of 32 on the tuning set it was tuned against, and the held-out set is the honest figure", "Held-out 21 to 23 of 26 (80% to 88%)"],

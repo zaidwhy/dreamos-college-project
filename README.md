@@ -127,7 +127,7 @@ cd backend
 ./.venv/Scripts/python.exe -m pytest -v
 ```
 
-107 tests, fully offline - embeddings and LLM calls are mocked via fixtures in
+110 tests, fully offline - embeddings and LLM calls are mocked via fixtures in
 `tests/conftest.py`, so no Ollama instance is required to run them. They run on every push
 in CI (`.github/workflows/ci.yml`).
 

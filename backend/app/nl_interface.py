@@ -64,17 +64,27 @@ def handle_message(user_message: str, session_id: str | None = None) -> NLRespon
     query = classification.get("query") or user_message
 
     referenced = None
+    weak_referenced = None
     if session_id:
         # A bare "open it" is unambiguous even if the model filed it under another intent.
         if _OPEN_VERB.match(user_message) and intent in ("search", "other"):
             if context_memory.resolve_reference(session_id, user_message):
                 intent = "open"
         if intent in ("open", "related"):
-            referenced = context_memory.resolve_reference(
+            # `referenced` is rule-based only (ordinals, bare "it"/"that") - deterministic and
+            # always trusted first. `weak_referenced` additionally accepts the model's own
+            # refers_to_previous flag, which is unreliable for a message with real content of its
+            # own: "what's related to my resume" got refers_to_previous=True (confirmed live,
+            # 2026-09-23) purely because it echoes the "what's related to X" example in the
+            # prompt, even though "resume" is a perfectly good search topic on its own. So the
+            # weak signal is only consulted as a last resort, after a confident direct search on
+            # `query` has already failed - see _open/_related.
+            referenced = context_memory.resolve_reference(session_id, user_message)
+            weak_referenced = context_memory.resolve_reference(
                 session_id, user_message, bool(classification.get("refers_to_previous"))
             )
 
-    response = _route(intent, query, referenced)
+    response = _route(intent, query, referenced, weak_referenced)
 
     if session_id:
         context_memory.add_turn(session_id, "user", user_message, intent)
@@ -88,7 +98,7 @@ def handle_message(user_message: str, session_id: str | None = None) -> NLRespon
     return response
 
 
-def _route(intent: str, query: str, referenced: str | None) -> NLResponse:
+def _route(intent: str, query: str, referenced: str | None, weak_referenced: str | None = None) -> NLResponse:
     if intent == "search":
         hits = search.semantic_search(query)
         if not hits:
@@ -106,10 +116,10 @@ def _route(intent: str, query: str, referenced: str | None) -> NLResponse:
         )
 
     if intent == "open":
-        return _open(query, referenced)
+        return _open(query, referenced, weak_referenced)
 
     if intent == "related":
-        return _related(query, referenced)
+        return _related(query, referenced, weak_referenced)
 
     if intent == "workspace":
         return _workspace(query)
@@ -150,19 +160,24 @@ def _open_response(hit: search.SearchHit, note: str = "") -> NLResponse:
     )
 
 
-def _open(query: str, referenced: str | None) -> NLResponse:
+def _open(query: str, referenced: str | None, weak_referenced: str | None = None) -> NLResponse:
     if referenced:
         hit = search.hit_for_path(referenced)
         if hit:
             return _open_response(hit)
 
     hits = search.semantic_search(query, top_k=3)
-    if not hits:
-        return NLResponse(intent="open", message=f"No file found matching '{query}'.")
+    best = hits[0] if hits else None
 
-    best = hits[0]
-    if best.similarity < settings.search_similarity_threshold:
-        # Weak matches are now returned by search, but launching a file needs real confidence.
+    if not best or best.similarity < settings.search_similarity_threshold:
+        # The query alone gave no confident answer - only now fall back to the model's guess
+        # that this continues the previous topic (see the comment in handle_message).
+        if weak_referenced:
+            hit = search.hit_for_path(weak_referenced)
+            if hit:
+                return _open_response(hit)
+        if not hits:
+            return NLResponse(intent="open", message=f"No file found matching '{query}'.")
         return NLResponse(
             intent="open",
             message=f"Not sure which file you mean by '{query}'. Closest matches, nothing opened:",
@@ -185,11 +200,18 @@ def _open(query: str, referenced: str | None) -> NLResponse:
     return _open_response(best)
 
 
-def _related(query: str, referenced: str | None) -> NLResponse:
+def _related(query: str, referenced: str | None, weak_referenced: str | None = None) -> NLResponse:
     target = referenced
     if target is None:
         hits = search.semantic_search(query, top_k=1)
-        target = hits[0].path if hits else None
+        if hits and hits[0].similarity >= settings.search_similarity_threshold:
+            target = hits[0].path
+        elif weak_referenced:
+            # No confident direct answer for `query` itself - only now trust the model's guess
+            # that this continues the previous topic (see the comment in handle_message).
+            target = weak_referenced
+        elif hits:
+            target = hits[0].path
     source = search.hit_for_path(target) if target else None
     if source is None:
         return NLResponse(intent="related", message=f"I couldn't find a file matching '{query}' to look up.")

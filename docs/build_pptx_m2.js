@@ -231,7 +231,7 @@ async function main() {
     ], { size: 14.5 });
     cardText(s, 0.6, 4.15, 5.95, 2.65, "Tools", [
       "Git and GitHub (private repository) with CI on every push",
-      "pytest: 107 tests, fully offline (embeddings and LLM mocked)",
+      "pytest: 110 tests, fully offline (embeddings and LLM mocked)",
       "Mermaid diagrams; pptxgenjs and docx-js for deliverables",
       "WiX and NSIS (Tauri bundler) for Windows installers",
     ], { size: 14.5 });
@@ -387,7 +387,7 @@ async function main() {
     const s = contentSlide(pres, "Implementation status");
     [
       ["6 / 6", "proposed modules built, integrated, tested and packaged", NAVY],
-      ["107", "automated tests, all offline; CI on every push", TEAL],
+      ["110", "automated tests, all offline; CI on every push", TEAL],
       ["88%", "intent routing on phrasings the prompt was never tuned on (23 of 26)", "8A93AA"],
     ].forEach(([big, small, col], i) => {
       const x = 0.6 + i * 4.1;
@@ -477,7 +477,7 @@ async function main() {
     const s = contentSlide(pres, "Testing and verification", "Report section 5.6");
     const rows = [
       [th("Level"), th("What was done"), th("Result")],
-      ["Unit and integration", "107 pytest tests: indexing, search and keyword boost, organizer, graph, memory, workspaces, intent routing, reset script, HTTP API", "107 passed, offline"],
+      ["Unit and integration", "110 pytest tests: indexing, search and keyword boost, organizer, graph, memory, workspaces, intent routing, reset script, HTTP API", "110 passed, offline"],
       ["Continuous integration", "GitHub Actions runs the suite on every push (Linux)", "Passing"],
       ["Test strength", "Key guards deliberately broken to confirm a test fails", "Each caught"],
       ["Intent routing, real model", "32-message tuning set and a 26-message held-out set on llama3.2; prompt rewritten and compared", "Held-out 80% to 88%"],
