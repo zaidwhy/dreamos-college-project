@@ -250,6 +250,30 @@ async function main() {
     fit(s, path.join(DIAG, "01_architecture.png"), 0.8, 1.95, 11.7, 4.7);
   }
 
+  // 8b. DIAGRAMS: flow of a request, sequence, use cases and database ------
+  {
+    const s = slide(pres, bgMain, "Part 3 - Diagrams", "How a request flows through the system");
+    s.addShape("roundRect", { x: 0.6, y: 1.8, w: 12.1, h: 5.0, rectRadius: 0.15, fill: { color: C.panel, transparency: 15 }, line: { color: C.line } });
+    fit(s, path.join(DIAG, "04_dfd_level1.png"), 0.8, 1.95, 11.7, 4.7);
+  }
+  {
+    const s = slide(pres, bgCool, "Part 3 - Diagrams", "A follow-up question, step by step");
+    s.addShape("roundRect", { x: 0.6, y: 1.8, w: 7.9, h: 5.1, rectRadius: 0.15, fill: { color: C.panel, transparency: 15 }, line: { color: C.line } });
+    fit(s, path.join(DIAG, "10_sequence_followup.png"), 0.75, 1.92, 7.6, 4.85);
+    bullets(s, [
+      "You ask for invoices; the answer is remembered with the files it showed.",
+      "“open the second one” is worked out from that memory, not guessed.",
+      "The app opens the file, and the choice is saved for next time.",
+    ], 8.9, 2.0, 3.9, 4.6, 16);
+  }
+  {
+    const s = slide(pres, bgWarm, "Part 3 - Diagrams", "What users can do, and how the data fits together");
+    glass(s, 0.6, 1.8, 5.6, 5.1, C.teal);
+    fit(s, path.join(DIAG, "05_use_case.png"), 0.8, 1.95, 5.2, 4.8);
+    glass(s, 6.5, 1.8, 6.2, 5.1, C.amber);
+    fit(s, path.join(DIAG, "08_er_diagram.png"), 6.7, 1.95, 5.8, 4.8);
+  }
+
   // 9. SIX MODULES --------------------------------------------------------
   {
     const s = slide(pres, bgMain, "Part 3 - Modules", "Six modules, each with one job");
@@ -283,7 +307,7 @@ async function main() {
     s.addText("A real example", { x: 7.8, y: 2.25, w: 4.6, h: 0.4, fontFace: HEAD, fontSize: 16, bold: true, color: C.amber, margin: 0 });
     s.addText("“find something about a meeting”", { x: 7.8, y: 2.8, w: 4.6, h: 0.7, fontFace: HEAD, fontSize: 20, italic: true, color: C.text, margin: 0 });
     s.addText("It returns the team notes, though the file names say nothing about meetings.", { x: 7.8, y: 3.6, w: 4.6, h: 1.2, fontFace: BODY, fontSize: 17, color: C.soft, margin: 0, valign: "top" });
-    s.addText("Honest note: very short queries are harder, and we measure that on slides 20 and 21.", { x: 7.8, y: 5.4, w: 4.6, h: 0.9, fontFace: BODY, fontSize: 14, italic: true, color: C.dim, margin: 0, valign: "top" });
+    s.addText("Honest note: very short queries are harder, and we measure that on slides 23 and 24.", { x: 7.8, y: 5.4, w: 4.6, h: 0.9, fontFace: BODY, fontSize: 14, italic: true, color: C.dim, margin: 0, valign: "top" });
   }
 
   // 11. KEY IDEA: knowledge graph ----------------------------------------
