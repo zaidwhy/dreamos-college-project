@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from app import context_memory, knowledge_graph, nl_interface, organizer, search, workspace
+from app import context_memory, knowledge_graph, nl_interface, organizer, privacy, search, workspace
 from app.db import init_db
 from app.indexer import index_vault
 from app.ollama_client import OllamaError
@@ -146,6 +146,11 @@ def usage_open(req: OpenedRequest) -> dict:
     """The UI reports a file the user opened by clicking it (chat opens are recorded by /chat)."""
     context_memory.record_open(req.path)
     return {"recorded": req.path}
+
+
+@app.get("/privacy/audit")
+def privacy_audit() -> dict:
+    return privacy.audit()
 
 
 @app.get("/graph")

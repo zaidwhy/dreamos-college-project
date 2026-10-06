@@ -488,3 +488,57 @@ body,
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- privacy ---------- */
+
+.privacy-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 980px;
+}
+
+.privacy-verdict {
+  border-radius: 10px;
+  padding: 18px 20px;
+  border: 1px solid var(--border);
+  background: var(--bg-elevated);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.privacy-ok {
+  border-color: #2f6b47;
+  background: #14241b;
+}
+
+.privacy-warn {
+  border-color: #8a4a3a;
+  background: #2a1a16;
+}
+
+.privacy-headline {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.pill-ok {
+  background: #1f3a30;
+  color: #6fd08c;
+}
+
+.pill-warn {
+  background: #3d2626;
+  color: #e08585;
+}
+
+.plain-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}

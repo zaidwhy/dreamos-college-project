@@ -5,14 +5,16 @@ import { checkHealth, runIndex, sendChatMessage, startNewSession, type ChatRespo
 import { GraphView } from "./components/GraphView";
 import { OrganizeResults, SearchResults, WorkspaceResults } from "./components/Results";
 import { WorkspacePanel } from "./components/WorkspacePanel";
+import { PrivacyPanel } from "./components/PrivacyPanel";
 import { errorText, openAll } from "./openFile";
 
-type View = "chat" | "graph" | "workspaces";
+type View = "chat" | "graph" | "workspaces" | "privacy";
 
 const TABS: { id: View; label: string }[] = [
   { id: "chat", label: "Chat" },
   { id: "graph", label: "Knowledge graph" },
   { id: "workspaces", label: "Workspaces" },
+  { id: "privacy", label: "Privacy" },
 ];
 
 interface HistoryEntry {
@@ -126,6 +128,12 @@ function App() {
       {view === "workspaces" && (
         <div className="view-scroll">
           <WorkspacePanel />
+        </div>
+      )}
+
+      {view === "privacy" && (
+        <div className="view-scroll">
+          <PrivacyPanel />
         </div>
       )}
 
