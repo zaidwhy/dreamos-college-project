@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:8420";
+const BASE_URL = "http://127.0.0.1:8420";
 
 export interface SearchHit {
   path: string;
@@ -194,4 +194,26 @@ export async function checkHealth(): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+export interface PrivacyEndpoint {
+  name: string;
+  url: string;
+  host: string;
+  is_loopback: boolean;
+  used_for: string;
+}
+
+export interface PrivacyReport {
+  local_only: boolean;
+  data_can_leave_machine: boolean;
+  endpoints: PrivacyEndpoint[];
+  vault_folder: string;
+  app_data_folder: string;
+  stored_locally: string[];
+  not_verified_by_this_report: string;
+}
+
+export function fetchPrivacy(): Promise<PrivacyReport> {
+  return getJson<PrivacyReport>("/privacy/audit");
 }

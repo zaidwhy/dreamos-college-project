@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     chroma_dir: Path = BACKEND_DIR / "data" / "chroma"
     sqlite_path: Path = BACKEND_DIR / "data" / "dreamos.db"
 
-    ollama_base_url: str = "http://localhost:11434"
+    ollama_base_url: str = "http://127.0.0.1:11434"
     embed_model: str = "nomic-embed-text"
     llm_model: str = "llama3.2"
 

@@ -132,7 +132,7 @@ import requests
 
 def embed(text: str) -> list[float]:
     resp = requests.post(
-        "http://localhost:11434/api/embeddings",
+        "http://127.0.0.1:11434/api/embeddings",
         json={"model": "nomic-embed-text", "prompt": text},
         timeout=30,
     )

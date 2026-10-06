@@ -1,0 +1,41 @@
+{
+  "500": {
+    "files": 500,
+    "indexed": 500,
+    "index_seconds": 25.7,
+    "index_files_per_second": 19.42,
+    "graph_rebuild_seconds": 1.67,
+    "graph_edges": 1062,
+    "search_queries": 36,
+    "search_p50_ms": 50.7,
+    "search_p95_ms": 61.3,
+    "precision_at_5": 1.0,
+    "precision_queries_with_no_result": 0
+  },
+  "2000": {
+    "files": 2000,
+    "indexed": 2000,
+    "index_seconds": 129.0,
+    "index_files_per_second": 15.51,
+    "graph_rebuild_seconds": 24.78,
+    "graph_edges": 4747,
+    "search_queries": 36,
+    "search_p50_ms": 121.0,
+    "search_p95_ms": 140.3,
+    "precision_at_5": 1.0,
+    "precision_queries_with_no_result": 0
+  },
+  "5000": {
+    "files": 5000,
+    "indexed": 5000,
+    "index_seconds": 446.5,
+    "index_files_per_second": 11.2,
+    "graph_rebuild_seconds": 143.3,
+    "graph_edges": 11938,
+    "search_queries": 36,
+    "search_p50_ms": 203.5,
+    "search_p95_ms": 239.0,
+    "precision_at_5": 1.0,
+    "precision_queries_with_no_result": 0
+  }
+}

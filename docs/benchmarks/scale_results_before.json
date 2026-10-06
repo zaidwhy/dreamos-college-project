@@ -1,0 +1,28 @@
+{
+  "500": {
+    "files": 500,
+    "indexed": 500,
+    "index_seconds": 40.3,
+    "index_files_per_second": 12.41,
+    "graph_rebuild_seconds": 17.04,
+    "graph_edges": 1062,
+    "search_queries": 36,
+    "search_p50_ms": 47.5,
+    "search_p95_ms": 63.9,
+    "precision_at_5": 1.0,
+    "precision_queries_with_no_result": 0
+  },
+  "2000": {
+    "files": 2000,
+    "indexed": 2000,
+    "index_seconds": 372.5,
+    "index_files_per_second": 5.37,
+    "graph_rebuild_seconds": 246.07,
+    "graph_edges": 4747,
+    "search_queries": 36,
+    "search_p50_ms": 86.8,
+    "search_p95_ms": 116.1,
+    "precision_at_5": 1.0,
+    "precision_queries_with_no_result": 0
+  }
+}

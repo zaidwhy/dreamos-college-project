@@ -303,3 +303,54 @@ def test_a_loose_chain_of_files_is_never_reported_as_one_topic(isolated_env, fak
     groups = _cluster_names()
     assert all(len(g) < 5 for g in groups)
     assert not any({"c1", "c5"} <= set(g) for g in groups)
+
+
+# ---------------------------------------------- vectorised versions match the original loops
+
+
+def _reference_similar(vectors, ids, threshold, top_k):
+    """The original pairwise implementation, kept here as the specification."""
+    paths = sorted(vectors)
+    candidates = {p: [] for p in paths}
+    for i, a in enumerate(paths):
+        for b in paths[i + 1 :]:
+            score = kg._cosine(vectors[a], vectors[b])
+            if score >= threshold:
+                candidates[a].append((score, b))
+                candidates[b].append((score, a))
+    edges = {}
+    for a, scored in candidates.items():
+        for score, b in sorted(scored, reverse=True)[:top_k]:
+            low, high = sorted((ids[a], ids[b]))
+            edges[(low, high, kg.SIMILAR)] = round(score, 4)
+    return edges
+
+
+def test_vectorised_similarity_matches_the_original_loop_on_random_vectors(monkeypatch):
+    import random
+
+    rng = random.Random(3)
+    vectors = {f"f{i}.txt": [rng.gauss(0, 1) for _ in range(16)] for i in range(60)}
+    ids = {p: i + 1 for i, p in enumerate(sorted(vectors))}
+    by_path = {p: {"id": ids[p]} for p in vectors}
+    monkeypatch.setattr(settings, "graph_similarity_threshold", 0.1)
+    monkeypatch.setattr(settings, "graph_top_k", 3)
+
+    got = {}
+    kg._add_similar_edges(got, vectors, by_path)
+
+    assert got == _reference_similar(vectors, ids, 0.1, 3)
+    assert len(got) > 20  # the comparison is not vacuous
+
+
+def test_vectorised_shared_tags_match_the_pairwise_definition():
+    files = [
+        {"id": 1, "tags": "billing,march,invoice"},
+        {"id": 2, "tags": "billing,march,payment"},
+        {"id": 3, "tags": "billing,journal"},
+        {"id": 4, "tags": ""},
+    ]
+    got = {}
+    kg._add_shared_tag_edges(got, files)
+
+    assert got == {(1, 2, kg.SHARED_TAG): round(2 / 4, 4)}

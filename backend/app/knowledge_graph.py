@@ -14,6 +14,8 @@ import re
 from collections import Counter
 from dataclasses import dataclass
 
+import numpy as np
+
 from app import vectorstore
 from app.config import settings
 from app.db import connection
@@ -68,21 +70,30 @@ def _reference_patterns(name: str) -> list[re.Pattern]:
 
 
 def _add_similar_edges(edges: dict, vectors: dict[str, list[float]], by_path: dict) -> None:
-    paths = sorted(p for p in vectors if p in by_path)
-    candidates: dict[str, list[tuple[float, str]]] = {p: [] for p in paths}
-    for i, a in enumerate(paths):
-        for b in paths[i + 1 :]:
-            score = _cosine(vectors[a], vectors[b])
-            if score >= settings.graph_similarity_threshold:
-                candidates[a].append((score, b))
-                candidates[b].append((score, a))
+    """Vectorised with numpy: one matrix product gives every pairwise cosine at once.
 
-    # Keep each file's strongest few neighbours; an edge survives if either end picks it,
-    # which stops a hub file from drowning the graph in near-identical links.
-    for a, scored in candidates.items():
-        for score, b in sorted(scored, reverse=True)[: settings.graph_top_k]:
-            low, high = sorted((by_path[a]["id"], by_path[b]["id"]))
-            edges[(low, high, SIMILAR)] = round(score, 4)
+    Same result as the original pairwise loop: for each file keep its top `graph_top_k` neighbours
+    among those at or above the threshold, and let an edge survive if either end keeps it.
+    """
+    paths = sorted(p for p in vectors if p in by_path)
+    if len(paths) < 2:
+        return
+    matrix = np.asarray([vectors[p] for p in paths], dtype=np.float64)
+    norms = np.linalg.norm(matrix, axis=1)
+    norms[norms == 0] = 1.0
+    unit = matrix / norms[:, None]
+    sims = unit @ unit.T
+    np.fill_diagonal(sims, -np.inf)
+
+    k = min(settings.graph_top_k, len(paths) - 1)
+    neighbours = np.argpartition(-sims, k - 1, axis=1)[:, :k]
+    ids = [by_path[p]["id"] for p in paths]
+    for i, row in enumerate(neighbours):
+        for j in row:
+            score = float(sims[i, j])
+            if score >= settings.graph_similarity_threshold:
+                low, high = sorted((ids[i], ids[int(j)]))
+                edges[(low, high, SIMILAR)] = round(score, 4)
 
 
 def _add_reference_edges(edges: dict, files: list) -> None:
@@ -103,13 +114,23 @@ def _add_reference_edges(edges: dict, files: list) -> None:
 
 
 def _add_shared_tag_edges(edges: dict, files: list) -> None:
+    """Uses an inverted index (tag -> files) so only files that share a tag are ever compared."""
     tagsets = {f["id"]: {t for t in (f["tags"] or "").split(",") if t} for f in files}
-    ids = sorted(tagsets)
-    for i, a in enumerate(ids):
-        for b in ids[i + 1 :]:
-            shared = tagsets[a] & tagsets[b]
-            if len(shared) >= settings.graph_min_shared_tags:
-                edges[(a, b, SHARED_TAG)] = round(len(shared) / len(tagsets[a] | tagsets[b]), 4)
+    files_with_tag: dict[str, list[int]] = {}
+    for fid, tags in tagsets.items():
+        for tag in tags:
+            files_with_tag.setdefault(tag, []).append(fid)
+
+    shared_counts: Counter = Counter()
+    for fids in files_with_tag.values():
+        for i, a in enumerate(fids):
+            for b in fids[i + 1 :]:
+                shared_counts[(min(a, b), max(a, b))] += 1
+
+    for (a, b), shared in shared_counts.items():
+        if shared >= settings.graph_min_shared_tags:
+            union = len(tagsets[a] | tagsets[b])
+            edges[(a, b, SHARED_TAG)] = round(shared / union, 4)
 
 
 def rebuild() -> dict:
