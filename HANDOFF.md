@@ -1,6 +1,6 @@
 # DreamOS - Handoff
 
-Last updated: 2026-09-20
+Last updated: 2026-10-06
 
 ## What this is
 
@@ -21,6 +21,35 @@ Built 2026-09-20 for the Monitoring on the 24th:
 - NL interface gained `related` and `workspace` intents; `/chat` takes a `session_id`.
 - Frontend: Chat / Knowledge graph / Workspaces tabs, clickable results, `New chat`.
 - 107 backend tests, all offline. CI (`.github/workflows/ci.yml`) now actually exists and passes.
+
+## Session 2026-10-06: scale, privacy, final deck and report
+
+- **Privacy audit** (`backend/app/privacy.py`, `GET /privacy/audit`, Privacy tab in the app): reads
+  live config, lists each network endpoint and whether it is loopback. Does not inspect traffic;
+  the report says to check with `netstat -ano` (backend must listen on 127.0.0.1 only).
+- **Two measured fixes:**
+  - `localhost` resolved to IPv6 first on this machine, adding about 1 s to every embedding call.
+    Config, frontend API and the demo-vault generator now use `127.0.0.1`. Embedding calls drop to
+    about 15 ms; search p50 went from about 2 s to about 50 ms.
+  - Knowledge-graph similarity is now a NumPy matrix product, and shared tags use an inverted
+    index. An equivalence test checks it against the original loop on random vectors.
+- **Scale benchmark** `backend/scripts/bench_scale.py` (synthetic vaults, real models; one process
+  per size). Summary committed in `docs/benchmarks/`; raw output lives in `backend/data/bench/`,
+  which is gitignored. Results after the fixes: 500 files index 19.4/s, graph 1.7 s, search p50 51
+  ms; 2,000 files graph 24.8 s (was 246 s); 5,000 files index 11.2/s, graph 143 s, search p50 204
+  ms. **The graph rebuild is still the limit at 5,000 files.** Its reference check and clustering
+  remain pairwise.
+- **Final deck** `docs/deck/build_deck_final.js` -> `DreamOS-Final-Monitoring.pptx` (27 slides,
+  checked in PowerPoint). **Blackbook** `docs/blackbook/build_blackbook.js` ->
+  `DreamOS-Final-Year-Project-Report.docx` (31 pages, index format, TOC populated in Word). Both read
+  `docs/benchmarks/`.
+- **Tests: 116 passing** (`backend/.venv`). CI green on the last pushes.
+- **Environment:** the backend `.venv` had disappeared and was rebuilt from `requirements.txt`
+  (numpy is now pinned there). `frontend/node_modules` was reinstalled with `npm ci`.
+
+**Open for Zaid before the 13 Oct monitoring:** the guide's name (`<Name of Guide>` placeholder in
+the report and the deck, if any), what "upgrade IoT" should mean (no IoT part exists in DreamOS),
+and whether to add the MGM logo to the report cover (it is in the index PDF).
 
 ## Decisions worth knowing (not derivable from the code)
 
