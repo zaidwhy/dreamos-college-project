@@ -107,6 +107,7 @@ async function main() {
 
   const ic = {
     brain: await icon(icons.FaBrain, "#07081A"),
+    brainLight: await icon(icons.FaBrain, "#2DE2C4"),
     search: await icon(icons.FaSearch, "#2DE2C4"),
     folder: await icon(icons.FaFolderOpen, "#FFB547"),
     magic: await icon(icons.FaMagic, "#9B8CFF"),
@@ -132,14 +133,17 @@ async function main() {
   {
     const s = pres.addSlide(); num += 1;
     s.background = { data: bgMain };
-    s.addImage({ data: ic.brain, x: 0.8, y: 0.9, w: 0.9, h: 0.9 });
+    s.addImage({ data: ic.brainLight, x: 0.8, y: 0.9, w: 0.9, h: 0.9 });
+    s.addShape("roundRect", { x: 9.75, y: 0.6, w: 3.0, h: 1.85, fill: { color: "FFFFFF" }, line: { color: "FFFFFF" }, rectRadius: 0.12 });
+    s.addImage({ path: path.join(REPO, "docs", "assets", "mgm-logo.png"), x: 9.95, y: 0.75, w: 2.6, h: 1.485 });
     s.addText("DreamOS", { x: 0.7, y: 2.0, w: 12, h: 1.4, fontFace: HEAD, fontSize: 88, bold: true, color: C.text, margin: 0 });
     s.addText("Find your files by what they are about, not by what they are called", { x: 0.75, y: 3.45, w: 11.5, h: 0.6, fontFace: BODY, fontSize: 24, color: C.teal, margin: 0 });
     s.addText("Final Year B.Tech Project  |  Final Monitoring, 13 October 2026", { x: 0.75, y: 4.25, w: 11, h: 0.4, fontFace: BODY, fontSize: 16, color: C.soft, margin: 0 });
     s.addText([
       { text: "Zaid Ali Syed (2305139)   Om Vyas (2305170)   Krushna Kadam (2305165)", options: { breakLine: true } },
+      { text: "Under the guidance of Dr. Minakshi R. Rajput", options: { breakLine: true } },
       { text: "Institute of Information and Communication Technology, MGM University", options: { color: C.dim } },
-    ], { x: 0.75, y: 6.2, w: 12, h: 0.8, fontFace: BODY, fontSize: 14, color: C.soft, margin: 0 });
+    ], { x: 0.75, y: 5.9, w: 12, h: 1.1, fontFace: BODY, fontSize: 14, color: C.soft, margin: 0 });
   }
 
   // 2. THE STORY: a messy folder ------------------------------------------

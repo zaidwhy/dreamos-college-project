@@ -236,7 +236,7 @@ const limitsConclusion = [
 
 const ack = [
   new Paragraph({ spacing: { before: 120, after: 80 }, children: [new TextRun({ text: "ACKNOWLEDGMENT", font: FONT, size: T10, bold: true })], alignment: AlignmentType.CENTER }),
-  p("The authors thank their project guide for direction on this work, and the Institute of Information and Communication Technology, MGM University, for the Project Monitoring structure under which it was reviewed.", { after: 160 }),
+  p("The authors thank their project guide, Dr. Minakshi R. Rajput, for direction on this work, and the Institute of Information and Communication Technology, MGM University, for the Project Monitoring structure under which it was reviewed.", { after: 160 }),
 ];
 
 const refs = [

@@ -47,9 +47,11 @@ Built 2026-09-20 for the Monitoring on the 24th:
 - **Environment:** the backend `.venv` had disappeared and was rebuilt from `requirements.txt`
   (numpy is now pinned there). `frontend/node_modules` was reinstalled with `npm ci`.
 
-**Open for Zaid before the 13 Oct monitoring:** the guide's name (`<Name of Guide>` placeholder in
-the report and the deck, if any), what "upgrade IoT" should mean (no IoT part exists in DreamOS),
-and whether to add the MGM logo to the report cover (it is in the index PDF).
+**Resolved 2026-10-10:** guide is Dr. Minakshi R. Rajput (blackbook cover, certificate,
+acknowledgement, deck title slide, paper acknowledgement). MGM logo (`docs/assets/mgm-logo.png`) is on
+the blackbook cover and certificate and the deck title slide. IoT upgrade dropped by Zaid.
+**Also open:** IEEE paper (`docs/paper/`) needs guide + RM faculty approval before submission, then
+submission proof goes to the RM faculty; reformat to the venue template once conference links arrive.
 
 ## Decisions worth knowing (not derivable from the code)
 

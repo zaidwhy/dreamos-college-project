@@ -97,7 +97,12 @@ const f5 = BEFORE["500"], f2 = BEFORE["2000"];
 const r1 = (x) => (Math.round(x * 10) / 10).toFixed(1);
 
 // ---------------------------------------------------------------- front matter
+const LOGO = fs.readFileSync(path.join(REPO, "docs", "assets", "mgm-logo.png"));
+const logoPara = (w, after) => new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after },
+  children: [new ImageRun({ type: "png", data: LOGO, transformation: { width: w, height: Math.round(w * 1093 / 1913) }, altText: { title: "MGM University logo", description: "MGM University logo", name: "mgm-logo.png" } })] });
+
 const cover = [
+  logoPara(240, 300),
   para("A", { align: AlignmentType.CENTER, after: 0, bold: true, size: 28 }),
   para("B. Tech (Information Technology)", { align: AlignmentType.CENTER, after: 200, bold: true, size: 28 }),
   para("PROJECT REPORT ON", { align: AlignmentType.CENTER, after: 300, bold: true, size: 28 }),
@@ -107,25 +112,26 @@ const cover = [
   para("Om Vyas\t\t2305170", { align: AlignmentType.CENTER, after: 60 }),
   para("Krushna Kadam\t\t2305165", { align: AlignmentType.CENTER, after: 300 }),
   para("Under Guidance of", { align: AlignmentType.CENTER, after: 120, bold: true }),
-  para("<Name of Guide>", { align: AlignmentType.CENTER, after: 400, bold: true }),
+  para("Dr. Minakshi R. Rajput", { align: AlignmentType.CENTER, after: 400, bold: true }),
   para("Institute of Information and Communication Technology (IICT)", { align: AlignmentType.CENTER, after: 0, bold: true }),
   para("MGM University, Chh. Sambhajinagar", { align: AlignmentType.CENTER, after: 0, bold: true }),
   para("Academic Year 2026-2027", { align: AlignmentType.CENTER, after: 0, bold: true }),
 ];
 
 const certificate = [
+  logoPara(150, 200),
   para("Institute of Information and Communication Technology", { align: AlignmentType.CENTER, after: 0, bold: true }),
   para("MGM University, Chh. Sambhajinagar", { align: AlignmentType.CENTER, after: 400, bold: true }),
   para("CERTIFICATE", { align: AlignmentType.CENTER, after: 400, bold: true, size: 28 }),
-  para("This is to certify that Zaid Ali Syed (Roll No. 2305139), Om Vyas (Roll No. 2305170) and Krushna Kadam (Roll No. 2305165) of B.Tech (IT), have successfully completed project work on “DreamOS: An AI-Native Semantic File Management System” under the guidance of <Name of Guide>, and submitted the same during the academic year 2026-2027 towards the partial fulfillment of the degree of B.Tech (IT) from Institute of Information and Communication Technology, MGM University, Chh. Sambhajinagar.", { after: 600 }),
-  para("<Guide's Name>\t\t\t\t\t\tDr. S. C. Tamane", { align: AlignmentType.LEFT, after: 0 }),
+  para("This is to certify that Zaid Ali Syed (Roll No. 2305139), Om Vyas (Roll No. 2305170) and Krushna Kadam (Roll No. 2305165) of B.Tech (IT), have successfully completed project work on “DreamOS: An AI-Native Semantic File Management System” under the guidance of Dr. Minakshi R. Rajput, and submitted the same during the academic year 2026-2027 towards the partial fulfillment of the degree of B.Tech (IT) from Institute of Information and Communication Technology, MGM University, Chh. Sambhajinagar.", { after: 600 }),
+  para("Dr. Minakshi R. Rajput\t\t\t\tDr. S. C. Tamane", { align: AlignmentType.LEFT, after: 0 }),
   para("Guide\t\t\t\t\t\t\tDirector, IICT", { align: AlignmentType.LEFT, after: 600 }),
   para("Date: ____________________", { align: AlignmentType.LEFT }),
 ];
 
 const acknowledgement = [
   h1("Acknowledgement"),
-  para("We thank our guide, <Name of Guide>, for guidance on the project. We thank Dr. S. C. Tamane, Director, IICT, and the faculty of the Institute of Information and Communication Technology for the environment and the Project Monitoring structure in which this work was reviewed."),
+  para("We thank our guide, Dr. Minakshi R. Rajput, for guidance on the project. We thank Dr. S. C. Tamane, Director, IICT, and the faculty of the Institute of Information and Communication Technology for the environment and the Project Monitoring structure in which this work was reviewed."),
   para("We are grateful to the open-source communities behind Ollama, ChromaDB, FastAPI, Tauri, React and pytest, on whose work DreamOS is built, and to our families for their patience during the long build."),
   para("\n(Zaid Ali Syed, Roll No. 2305139)\t\t(Om Vyas, Roll No. 2305170)\t\t(Krushna Kadam, Roll No. 2305165)", { align: AlignmentType.LEFT }),
 ];
