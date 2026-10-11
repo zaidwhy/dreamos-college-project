@@ -1,0 +1,609 @@
+{
+  "files": 37,
+  "queries": 36,
+  "queries_sharing_words": 26,
+  "queries_no_shared_words": 10,
+  "k": 8,
+  "all": {
+    "filename": {
+      "queries": 36,
+      "hit_at_1": 0.3333333333333333,
+      "hit_at_3": 0.3611111111111111,
+      "hit_at_8": 0.3611111111111111,
+      "mrr": 0.3472222222222222
+    },
+    "keyword": {
+      "queries": 36,
+      "hit_at_1": 0.5555555555555556,
+      "hit_at_3": 0.6666666666666666,
+      "hit_at_8": 0.6944444444444444,
+      "mrr": 0.6134259259259259
+    },
+    "embedding": {
+      "queries": 36,
+      "hit_at_1": 0.9166666666666666,
+      "hit_at_3": 1.0,
+      "hit_at_8": 1.0,
+      "mrr": 0.9537037037037037
+    },
+    "dreamos": {
+      "queries": 36,
+      "hit_at_1": 0.9444444444444444,
+      "hit_at_3": 1.0,
+      "hit_at_8": 1.0,
+      "mrr": 0.9722222222222222
+    }
+  },
+  "sharing_words": {
+    "filename": {
+      "queries": 26,
+      "hit_at_1": 0.46153846153846156,
+      "hit_at_3": 0.5,
+      "hit_at_8": 0.5,
+      "mrr": 0.4807692307692308
+    },
+    "keyword": {
+      "queries": 26,
+      "hit_at_1": 0.7692307692307693,
+      "hit_at_3": 0.9230769230769231,
+      "hit_at_8": 0.9615384615384616,
+      "mrr": 0.8493589743589743
+    },
+    "embedding": {
+      "queries": 26,
+      "hit_at_1": 0.9230769230769231,
+      "hit_at_3": 1.0,
+      "hit_at_8": 1.0,
+      "mrr": 0.9551282051282052
+    },
+    "dreamos": {
+      "queries": 26,
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "hit_at_8": 1.0,
+      "mrr": 1.0
+    }
+  },
+  "no_shared_words": {
+    "filename": {
+      "queries": 10,
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_8": 0.0,
+      "mrr": 0.0
+    },
+    "keyword": {
+      "queries": 10,
+      "hit_at_1": 0.0,
+      "hit_at_3": 0.0,
+      "hit_at_8": 0.0,
+      "mrr": 0.0
+    },
+    "embedding": {
+      "queries": 10,
+      "hit_at_1": 0.9,
+      "hit_at_3": 1.0,
+      "hit_at_8": 1.0,
+      "mrr": 0.95
+    },
+    "dreamos": {
+      "queries": 10,
+      "hit_at_1": 0.8,
+      "hit_at_3": 1.0,
+      "hit_at_8": 1.0,
+      "mrr": 0.9
+    }
+  },
+  "per_query": [
+    {
+      "query": "invoice BlueRidge hosting",
+      "relevant": [
+        "inv_003.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "inv_003.txt"
+    },
+    {
+      "query": "Ajanta Ellora caves trip",
+      "relevant": [
+        "travel_plan.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "travel_plan.txt"
+    },
+    {
+      "query": "chai recipe ginger cardamom",
+      "relevant": [
+        "recipe.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "recipe.txt"
+    },
+    {
+      "query": "workout log badminton",
+      "relevant": [
+        "workout_log.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "workout_log.txt"
+    },
+    {
+      "query": "quicksort implementation",
+      "relevant": [
+        "script1.py"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "script1.py"
+    },
+    {
+      "query": "Flask library book search",
+      "relevant": [
+        "old_flask_app.py"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 2,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "old_flask_app.py"
+    },
+    {
+      "query": "OWASP LLM Top 10",
+      "relevant": [
+        "misc_notes_v2.txt",
+        "standup.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "misc_notes_v2.txt"
+    },
+    {
+      "query": "list of the core modules to build first",
+      "relevant": [
+        "module_list.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "module_list.txt"
+    },
+    {
+      "query": "canteen receipt lunch",
+      "relevant": [
+        "scan0007.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "scan0007.txt"
+    },
+    {
+      "query": "knowledge graph design meeting",
+      "relevant": [
+        "mtg_04_12.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "mtg_04_12.txt"
+    },
+    {
+      "query": "sandboxed demo vault decision",
+      "relevant": [
+        "faculty_feedback.txt",
+        "notes.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 1,
+        "embedding": 2,
+        "dreamos": 1
+      },
+      "dreamos_top1": "notes.txt"
+    },
+    {
+      "query": "Kent Beck quote",
+      "relevant": [
+        "quotes.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "quotes.txt"
+    },
+    {
+      "query": "SQL marks query lab",
+      "relevant": [
+        "sql_practice.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "sql_practice.txt"
+    },
+    {
+      "query": "billing March domain renewal",
+      "relevant": [
+        "billing_march.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "billing_march.txt"
+    },
+    {
+      "query": "debounce helper function",
+      "relevant": [
+        "helper.js"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "helper.js"
+    },
+    {
+      "query": "who attended the team sync",
+      "relevant": [
+        "notes.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "notes.txt"
+    },
+    {
+      "query": "daily standup embedding progress",
+      "relevant": [
+        "standup.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "standup.txt"
+    },
+    {
+      "query": "early version of the specification",
+      "relevant": [
+        "spec_v1.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 3,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "spec_v1.txt"
+    },
+    {
+      "query": "old readme draft",
+      "relevant": [
+        "readme_old.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "readme_old.txt"
+    },
+    {
+      "query": "architecture of the backend and storage",
+      "relevant": [
+        "architecture_notes.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "architecture_notes.txt"
+    },
+    {
+      "query": "earnings from a side job for a small shop",
+      "relevant": [
+        "recieved_payment.txt"
+      ],
+      "shares_words": false,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "recieved_payment.txt"
+    },
+    {
+      "query": "present for my mother",
+      "relevant": [
+        "gift_ideas.txt"
+      ],
+      "shares_words": false,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "gift_ideas.txt"
+    },
+    {
+      "query": "bill from the college cafeteria",
+      "relevant": [
+        "scan0007.txt"
+      ],
+      "shares_words": false,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "scan0007.txt"
+    },
+    {
+      "query": "how to brew a hot drink with spices",
+      "relevant": [
+        "recipe.txt"
+      ],
+      "shares_words": false,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "recipe.txt"
+    },
+    {
+      "query": "physical activity diary",
+      "relevant": [
+        "workout_log.txt"
+      ],
+      "shares_words": false,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "workout_log.txt"
+    },
+    {
+      "query": "holiday to historic sites in Maharashtra",
+      "relevant": [
+        "travel_plan.txt"
+      ],
+      "shares_words": false,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "travel_plan.txt"
+    },
+    {
+      "query": "sorting algorithm from my data structures class",
+      "relevant": [
+        "script1.py"
+      ],
+      "shares_words": false,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "script1.py"
+    },
+    {
+      "query": "how to remember my login credentials",
+      "relevant": [
+        "password_hint_DO_NOT_SHARE.txt"
+      ],
+      "shares_words": false,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "password_hint_DO_NOT_SHARE.txt"
+    },
+    {
+      "query": "remarks from our mentor about what to improve",
+      "relevant": [
+        "faculty_feedback.txt",
+        "followups.txt",
+        "review_call_transcript.txt"
+      ],
+      "shares_words": false,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 2,
+        "dreamos": 2
+      },
+      "dreamos_top1": "quotes.txt"
+    },
+    {
+      "query": "unfinished job application document of Krushna",
+      "relevant": [
+        "Untitled document.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 1,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "Untitled document.txt"
+    },
+    {
+      "query": "the latest version of my job application document",
+      "relevant": [
+        "final_final_v3.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 2,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "final_final_v3.txt"
+    },
+    {
+      "query": "reasons we chose this project over the other two ideas",
+      "relevant": [
+        "mtg_04_12.txt",
+        "proposal_draft.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "proposal_draft.txt"
+    },
+    {
+      "query": "psychology book takeaways about intuition and deliberation",
+      "relevant": [
+        "book_notes.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": 1,
+        "keyword": 2,
+        "embedding": 3,
+        "dreamos": 1
+      },
+      "dreamos_top1": "book_notes.txt"
+    },
+    {
+      "query": "spending breakdown for the semester",
+      "relevant": [
+        "billing_march.txt",
+        "untitled_spreadsheet_notes.txt"
+      ],
+      "shares_words": false,
+      "ranks": {
+        "filename": null,
+        "keyword": null,
+        "embedding": 1,
+        "dreamos": 2
+      },
+      "dreamos_top1": "quotes.txt"
+    },
+    {
+      "query": "diary entry about a frustrating day fixing wrong results",
+      "relevant": [
+        "journal_march.txt"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 4,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "journal_march.txt"
+    },
+    {
+      "query": "scratch code to call the local model vector endpoint",
+      "relevant": [
+        "test123.py"
+      ],
+      "shares_words": true,
+      "ranks": {
+        "filename": null,
+        "keyword": 2,
+        "embedding": 1,
+        "dreamos": 1
+      },
+      "dreamos_top1": "test123.py"
+    }
+  ]
+}
