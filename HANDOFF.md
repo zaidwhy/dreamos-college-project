@@ -50,6 +50,7 @@ Built 2026-09-20 for the Monitoring on the 24th:
 **Resolved 2026-10-10:** guide is Dr. Minakshi R. Rajput (blackbook cover, certificate,
 acknowledgement, deck title slide, paper acknowledgement). MGM logo (`docs/assets/mgm-logo.png`) is on
 the blackbook cover and certificate and the deck title slide. IoT upgrade dropped by Zaid.
+**2026-10-11:** paper rebuilt to 6 pages (retrieval comparison vs BM25/filename baselines, 6 figures, design tables; anonymous copy `DreamOS-IEEE-Paper-Anonymous.*` for double-blind WCCG; figures via `docs/paper/make_figures.py`, eval via `backend/scripts/eval_retrieval.py`). Blackbook reformatted per faculty feedback (centred uppercase 14 pt chapter headings, no 'Chapter N:', 12 pt sub-headings/body/tables, table cover, longer acknowledgement, descriptions under every diagram, page numbers in lists and in text via `make_pages.py` two-pass build, `export.ps1` for Word PDF/TOC). Conferences: WCCG deadline 11 Oct 2026 (6 pages, double-blind, bans AI rewriting - settle with guide), ACCTCON 31 Oct 2026.
 **Also open:** IEEE paper (`docs/paper/`) needs guide + RM faculty approval before submission, then
 submission proof goes to the RM faculty; reformat to the venue template once conference links arrive.
 
