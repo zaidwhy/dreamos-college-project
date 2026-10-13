@@ -65,6 +65,7 @@ export interface IndexResult {
   indexed: string[];
   skipped_unchanged: string[];
   errors: Record<string, string>;
+  pruned?: string[];
   graph_edges: number | null;
 }
 
@@ -187,12 +188,26 @@ export async function openWorkspaceFiles(id: number): Promise<string[]> {
   return (await postJson<{ open_paths: string[] }>(`/workspace/${id}/open`)).open_paths;
 }
 
-export async function checkHealth(): Promise<boolean> {
+export interface HealthStatus {
+  up: boolean;
+  /** Configured Ollama models that are not installed (empty when all are present). */
+  missingModels: string[];
+  /** False when the backend is up but cannot reach Ollama at all. */
+  ollamaReachable: boolean;
+}
+
+export async function checkHealth(): Promise<HealthStatus> {
   try {
     const resp = await fetch(`${BASE_URL}/health`);
-    return resp.ok;
+    if (!resp.ok) return { up: false, missingModels: [], ollamaReachable: true };
+    const body = (await resp.json()) as { models?: { reachable: boolean; missing: string[] } };
+    return {
+      up: true,
+      missingModels: body.models?.missing ?? [],
+      ollamaReachable: body.models?.reachable ?? true,
+    };
   } catch {
-    return false;
+    return { up: false, missingModels: [], ollamaReachable: true };
   }
 }
 

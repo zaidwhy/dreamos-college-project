@@ -9,6 +9,28 @@ class OllamaError(RuntimeError):
     pass
 
 
+def model_status() -> dict:
+    """Which of the configured models Ollama actually has, without running any inference.
+
+    A demo-day failure that is cheap to prevent: the Ollama service is up but the model store is
+    empty (it was once), so every request fails with a vague error. This asks `/api/tags` (what
+    `ollama list` prints) and reports what is missing so the UI can say so before the first query.
+    """
+    wanted = [settings.embed_model, settings.llm_model]
+    try:
+        resp = requests.get(f"{settings.ollama_base_url}/api/tags", timeout=3)
+        resp.raise_for_status()
+        installed = [m.get("name", "") for m in resp.json().get("models", [])]
+    except (requests.RequestException, ValueError):
+        return {"reachable": False, "installed": [], "required": wanted, "missing": wanted}
+
+    def has(model: str) -> bool:
+        return any(name == model or name.startswith(f"{model}:") for name in installed)
+
+    return {"reachable": True, "installed": installed, "required": wanted,
+            "missing": [m for m in wanted if not has(m)]}
+
+
 def embed(text: str) -> list[float]:
     try:
         resp = requests.post(

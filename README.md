@@ -155,8 +155,18 @@ is sandboxed rather than a real personal folder.
   off-topic file-shaped queries return low-confidence guesses instead of nothing.
 - **Graph clustering** is deliberately conservative: some genuinely related files (e.g. the
   personal notes) stay unlinked rather than risk grouping unrelated ones.
-- Similarity is computed pairwise, which is fine at vault scale (tens to low hundreds of
-  files) but would need an approximate method for very large collections.
+- **Scale:** measured on synthetic vaults of 500, 2,000 and 5,000 files (`docs/benchmarks/`,
+  `backend/scripts/bench_scale.py`). A full graph rebuild takes 3.2 s at 5,000 files (it was 246 s at
+  2,000 files before the all-pairs steps were replaced; the edge set is identical). Embedding the
+  files dominates indexing: 276 s for 5,000 files. The similarity step still builds a dense
+  matrix of all file pairs (about 200 MB at 5,000 files), so collections beyond roughly ten
+  thousand files would need an approximate nearest-neighbour index. Precision on that synthetic data
+  is a topic-separation check, not a claim about real documents.
+- **Deleted files are pruned:** re-indexing removes the entries (vectors, edges, usage, workspace
+  membership) of files that no longer exist in the vault; it does nothing if the vault folder
+  itself is missing.
+- **Model preflight:** `/health` reports whether Ollama is reachable and which configured models
+  are not installed, and the app shows a banner with the `ollama pull` command.
 
 ## Project Monitoring - I report
 

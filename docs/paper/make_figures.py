@@ -211,27 +211,32 @@ def fig_scale():
     fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.1))
     fig.subplots_adjust(left=0.065, right=0.995, top=0.88, bottom=0.2, wspace=0.34)
     sizes = [500, 2000, 5000]
-    # (a) graph rebuild, log scale
+    # (a) graph rebuild, log scale, three stages
     ax = axes[0]
+    mid = json.loads((REPO / "docs" / "benchmarks" / "scale_results_vectorised_only.json").read_text())
     b = [BEFORE.get(str(s), {}).get("graph_rebuild_seconds") for s in sizes]
+    m = [mid[str(s)]["graph_rebuild_seconds"] for s in sizes]
     a = [BENCH[str(s)]["graph_rebuild_seconds"] for s in sizes]
-    w = 0.38
+    w = 0.27
     xs = range(3)
-    ax.bar([x - w / 2 for x in xs], [v or 0 for v in b], w, color="#c47f17", edgecolor="black", linewidth=0.4, label="pairwise loop")
-    ax.bar([x + w / 2 for x in xs], a, w, color="#2b4c7e", edgecolor="black", linewidth=0.4, label="vectorised")
+    ax.bar([x - w for x in xs], [v or 0 for v in b], w, color="#c47f17", edgecolor="black", linewidth=0.4, label="pairwise loop")
+    ax.bar([x for x in xs], m, w, color="#8fa9cf", edgecolor="black", linewidth=0.4, label="vectorised similarity")
+    ax.bar([x + w for x in xs], a, w, color="#2b4c7e", edgecolor="black", linewidth=0.4, label="final")
     ax.set_yscale("log")
-    ax.set_ylim(0.8, 6000)
+    ax.set_ylim(0.2, 20000)
     for x, v in zip(xs, b):
         if v:
-            ax.text(x - w / 2, v * 1.15, f"{v:.0f}", ha="center", fontsize=6)
+            ax.text(x - w, v * 1.15, f"{v:.0f}", ha="center", fontsize=5.5)
         else:
-            ax.text(x - w / 2, 1.0, "n/m", ha="center", fontsize=6, color=RED)
+            ax.text(x - w, 1.0, "n/m", ha="center", fontsize=5.5, color=RED)
+    for x, v in zip(xs, m):
+        ax.text(x, v * 1.15, f"{v:.1f}" if v < 10 else f"{v:.0f}", ha="center", fontsize=5.5)
     for x, v in zip(xs, a):
-        ax.text(x + w / 2, v * 1.15, f"{v:.1f}" if v < 10 else f"{v:.0f}", ha="center", fontsize=6)
+        ax.text(x + w, v * 1.15, f"{v:.1f}" if v < 10 else f"{v:.0f}", ha="center", fontsize=5.5)
     ax.set_xticks(list(xs)); ax.set_xticklabels(["500", "2,000", "5,000"], fontsize=7)
     ax.set_xlabel("Files", fontsize=7); ax.set_ylabel("Graph rebuild (s, log scale)", fontsize=7)
     ax.tick_params(axis="y", labelsize=6.5)
-    ax.legend(fontsize=6, frameon=False, loc="upper left")
+    ax.legend(fontsize=5.5, frameon=False, loc="upper left")
     ax.set_title("(a) Knowledge-graph rebuild", fontsize=7.5)
     # (b) indexing throughput
     ax = axes[1]

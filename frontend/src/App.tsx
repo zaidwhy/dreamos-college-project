@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { openPath } from "@tauri-apps/plugin-opener";
 import "./App.css";
-import { checkHealth, runIndex, sendChatMessage, startNewSession, type ChatResponse } from "./api";
+import { checkHealth, runIndex, sendChatMessage, startNewSession, type ChatResponse, type HealthStatus } from "./api";
 import { GraphView } from "./components/GraphView";
 import { OrganizeResults, SearchResults, WorkspaceResults } from "./components/Results";
 import { WorkspacePanel } from "./components/WorkspacePanel";
@@ -28,13 +28,22 @@ function App() {
   const [message, setMessage] = useState("");
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [loading, setLoading] = useState(false);
-  const [backendUp, setBackendUp] = useState<boolean | null>(null);
+  const [health, setHealth] = useState<HealthStatus | null>(null);
+  const backendUp = health === null ? null : health.up;
+  // Preflight: the backend can be up while Ollama is down or its models were never pulled.
+  const modelProblem = health?.up
+    ? !health.ollamaReachable
+      ? "Ollama is not reachable. Start the Ollama app, then reload."
+      : health.missingModels.length > 0
+        ? `Missing Ollama model${health.missingModels.length > 1 ? "s" : ""}: ${health.missingModels.join(", ")}. Run: ollama pull ${health.missingModels[0]}`
+        : ""
+    : "";
   const [indexStatus, setIndexStatus] = useState<string>("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    checkHealth().then(setBackendUp);
-    const interval = setInterval(() => checkHealth().then(setBackendUp), 10000);
+    checkHealth().then(setHealth);
+    const interval = setInterval(() => checkHealth().then(setHealth), 10000);
     return () => clearInterval(interval);
   }, []);
 
@@ -82,10 +91,11 @@ function App() {
     try {
       const result = await runIndex();
       const graph = result.graph_edges === null ? "" : `, ${result.graph_edges} graph links`;
+      const pruned = result.pruned && result.pruned.length > 0 ? `, removed ${result.pruned.length} deleted` : "";
       setIndexStatus(
         `Indexed ${result.indexed.length}, skipped ${result.skipped_unchanged.length}, errors ${
           Object.keys(result.errors).length
-        }${graph}`
+        }${pruned}${graph}`
       );
     } catch (err) {
       setIndexStatus(errorText(err));
@@ -118,6 +128,8 @@ function App() {
           {indexStatus && <span className="index-status">{indexStatus}</span>}
         </div>
       </header>
+
+      {modelProblem && <div className="model-banner" role="alert">{modelProblem}</div>}
 
       {view === "graph" && (
         <div className="view-scroll">

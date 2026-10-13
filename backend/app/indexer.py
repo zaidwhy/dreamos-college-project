@@ -16,6 +16,7 @@ class IndexResult:
     indexed: list[str] = field(default_factory=list)
     skipped_unchanged: list[str] = field(default_factory=list)
     errors: dict[str, str] = field(default_factory=dict)
+    pruned: list[str] = field(default_factory=list)
     graph_edges: int | None = None
 
 
@@ -64,6 +65,28 @@ def index_one_file(conn: sqlite3.Connection, vault_dir: Path, path: Path, rel_pa
     )
 
 
+def prune_missing(conn: sqlite3.Connection, vault_dir: Path) -> list[str]:
+    """Removes the index entries of files that no longer exist in the vault.
+
+    Deleting the files row cascades to its edges, usage events and workspace membership (foreign
+    keys); the vector chunks are removed separately. A file that is merely absent from this scan
+    but still on disk (for example an unsupported extension it was indexed under earlier) is kept.
+    Does nothing when the vault folder itself is missing, so an unmounted drive cannot wipe the
+    index.
+    """
+    if not vault_dir.is_dir():
+        return []
+    gone = [
+        row["path"]
+        for row in conn.execute("SELECT path FROM files").fetchall()
+        if not (vault_dir / row["path"]).exists()
+    ]
+    for rel_path in gone:
+        vectorstore.delete_chunks_for_path(rel_path)
+        conn.execute("DELETE FROM files WHERE path = ?", (rel_path,))
+    return gone
+
+
 def index_vault(vault_dir: Path | None = None) -> IndexResult:
     vault_dir = vault_dir or settings.vault_dir
     result = IndexResult()
@@ -91,9 +114,11 @@ def index_vault(vault_dir: Path | None = None) -> IndexResult:
             except (ExtractionError, OllamaError) as exc:
                 result.errors[rel_path] = str(exc)
 
+        result.pruned = prune_missing(conn, vault_dir)
+
     # Rebuilt only after the write transaction above has committed - a second connection
     # writing edges while the indexer's own transaction is still open would hit a SQLite lock.
-    if result.indexed:
+    if result.indexed or result.pruned:
         result.graph_edges = knowledge_graph.rebuild()["edges"]
 
     return result

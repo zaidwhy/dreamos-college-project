@@ -6,7 +6,8 @@ what is described. Rehearse it once end to end.
 
 ## Before you walk in
 
-1. **Models:** run `ollama list` - it must show `nomic-embed-text` and `llama3.2`. (Check this
+1. **Models:** the app now warns with a banner if a model is missing (and `run-dreamos.bat` pulls
+   it), but still run `ollama list` - it must show `nomic-embed-text` and `llama3.2`. (Check this
    first: on 2026-09-20 the model store was found empty and had to be re-pulled, about 2.3 GB.)
 2. **Reset to a known state:** `python backend/scripts/reset_demo_state.py`
    (clears rehearsal memory, usage history and workspaces; rebuilds the graph). If you ran the
@@ -127,7 +128,7 @@ vault, and the final report and paper."
 - **Intent routing** is a 3B model: 23 of 26 held-out phrasings routed correctly. "Which files should
   I archive" can be read as `organize`.
 - **Graph clustering** is conservative, so some related files (e.g. the personal notes) stay unlinked.
-- Similarity is pairwise: fine for tens to low hundreds of files, not thousands.
+- Scale: a graph rebuild takes about 3 s at 5,000 synthetic files; beyond roughly ten thousand files the dense similarity matrix would need an approximate index.
 
 ## If something breaks live
 

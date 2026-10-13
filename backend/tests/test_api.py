@@ -108,3 +108,47 @@ def test_a_click_open_reported_by_the_ui_counts_as_usage(client):
     client.post("/usage/open", json={"path": "not-a-file.txt"})  # unknown paths are ignored
 
     assert context_memory.open_counts() == {"a.txt": 2}
+
+
+def test_health_reports_missing_models(monkeypatch):
+    from fastapi.testclient import TestClient
+
+    from app import main
+
+    monkeypatch.setattr(
+        main, "model_status",
+        lambda: {"reachable": True, "installed": ["llama3.2:latest"], "required": ["nomic-embed-text", "llama3.2"], "missing": ["nomic-embed-text"]},
+    )
+    body = TestClient(main.app).get("/health").json()
+
+    assert body["status"] == "ok"
+    assert body["models"]["missing"] == ["nomic-embed-text"]
+
+
+def test_model_status_matches_tags_and_reports_missing(monkeypatch):
+    from app import ollama_client
+    from app.config import settings
+
+    class Resp:
+        def raise_for_status(self): ...
+        def json(self): return {"models": [{"name": "llama3.2:latest"}, {"name": "mistral:7b"}]}
+
+    monkeypatch.setattr(ollama_client.requests, "get", lambda *a, **k: Resp())
+    status = ollama_client.model_status()
+
+    assert status["reachable"] is True
+    assert status["missing"] == [settings.embed_model]  # llama3.2 matches llama3.2:latest
+
+
+def test_model_status_when_ollama_is_down(monkeypatch):
+    import requests
+
+    from app import ollama_client
+
+    def boom(*a, **k):
+        raise requests.ConnectionError("down")
+
+    monkeypatch.setattr(ollama_client.requests, "get", boom)
+    status = ollama_client.model_status()
+
+    assert status["reachable"] is False and len(status["missing"]) == 2

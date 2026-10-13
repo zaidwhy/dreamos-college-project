@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from app import context_memory, knowledge_graph, nl_interface, organizer, privacy, search, workspace
 from app.db import init_db
 from app.indexer import index_vault
-from app.ollama_client import OllamaError
+from app.ollama_client import OllamaError, model_status
 
 app = FastAPI(title="DreamOS Backend")
 
@@ -31,7 +31,8 @@ def ollama_error_handler(_request, exc: OllamaError):
 
 @app.get("/health")
 def health() -> dict:
-    return {"status": "ok"}
+    """Liveness plus a model preflight: `models.missing` lists configured models Ollama lacks."""
+    return {"status": "ok", "models": model_status()}
 
 
 @app.post("/index")
@@ -44,6 +45,7 @@ def run_index() -> dict:
         "indexed": result.indexed,
         "skipped_unchanged": result.skipped_unchanged,
         "errors": result.errors,
+        "pruned": result.pruned,
         "graph_edges": result.graph_edges,
     }
 

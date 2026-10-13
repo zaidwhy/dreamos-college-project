@@ -1,6 +1,6 @@
 # DreamOS - Handoff
 
-Last updated: 2026-10-06
+Last updated: 2026-10-13
 
 ## What this is
 
@@ -37,8 +37,7 @@ Built 2026-09-20 for the Monitoring on the 24th:
   per size). Summary committed in `docs/benchmarks/`; raw output lives in `backend/data/bench/`,
   which is gitignored. Results after the fixes: 500 files index 19.4/s, graph 1.7 s, search p50 51
   ms; 2,000 files graph 24.8 s (was 246 s); 5,000 files index 11.2/s, graph 143 s, search p50 204
-  ms. **The graph rebuild is still the limit at 5,000 files.** Its reference check and clustering
-  remain pairwise.
+  ms. (Superseded 2026-10-13: the rebuild is now 3.2 s at 5,000 files, see below.)
 - **Final deck** `docs/deck/build_deck_final.js` -> `DreamOS-Final-Monitoring.pptx` (27 slides,
   checked in PowerPoint). **Blackbook** `docs/blackbook/build_blackbook.js` ->
   `DreamOS-Final-Year-Project-Report.docx` (31 pages, index format, TOC populated in Word). Both read
@@ -53,6 +52,27 @@ the blackbook cover and certificate and the deck title slide. IoT upgrade droppe
 **2026-10-11:** paper rebuilt to 6 pages (retrieval comparison vs BM25/filename baselines, 6 figures, design tables; anonymous copy `DreamOS-IEEE-Paper-Anonymous.*` for double-blind WCCG; figures via `docs/paper/make_figures.py`, eval via `backend/scripts/eval_retrieval.py`). Blackbook reformatted per faculty feedback (centred uppercase 14 pt chapter headings, no 'Chapter N:', 12 pt sub-headings/body/tables, table cover, longer acknowledgement, descriptions under every diagram, page numbers in lists and in text via `make_pages.py` two-pass build, `export.ps1` for Word PDF/TOC). Conferences: WCCG deadline 11 Oct 2026 (6 pages, double-blind, bans AI rewriting - settle with guide), ACCTCON 31 Oct 2026.
 **Also open:** IEEE paper (`docs/paper/`) needs guide + RM faculty approval before submission, then
 submission proof goes to the RM faculty; reformat to the venue template once conference links arrive.
+
+## Session 2026-10-13: final polish
+
+- **Graph rebuild is no longer the limit.** Profiling at 5,000 files showed 98% of the 174 s rebuild
+  was the all-pairs reference regex check (50M searches). Fixed with a rarest-token index
+  (`_add_reference_edges`) and a heap/adjacency average-linkage (`cluster_pairs`); both are tested
+  against the original definitions (`test_knowledge_graph.py`). Same 11,938 edges. Rebuild now:
+  0.37 s / 1.26 s / 3.21 s at 500 / 2,000 / 5,000 files; 5,000-file index 276 s (18.1 files/s),
+  search p50 205 ms. Clusters on the 5,000 bench vault: 654 (was 655; ties are now broken by lowest
+  group id). Remaining limit: dense n x n similarity matrix (about 200 MB at 5,000 files).
+- **Pruning:** `index_vault` now removes rows (cascade) and vectors for files missing from disk;
+  skipped if the vault folder is missing. `/index` returns `pruned`.
+- **Model preflight:** `/health` -> `models {reachable, installed, required, missing}`; the app shows
+  a banner. `run-dreamos.ps1` already pulled missing models.
+- **Graph label overlap fixed** (`placeLabels` in `GraphView.tsx`; checked in a real browser).
+- **Tests: 123 passing.** Release exe rebuilt 2026-10-13 (`npm run tauri build`), MSI/NSIS installers
+  in `frontend/src-tauri/target/release/bundle/`.
+- **Retrieval comparison** `backend/scripts/eval_retrieval.py` -> `docs/benchmarks/retrieval_comparison.json`
+  (36 labelled queries, 4 systems). Paper + blackbook read it. Word PDF export hangs when launched as
+  a child `powershell -File`; run Word COM inline in the PowerShell tool with `DisplayAlerts = 0` and
+  delete a stale `~$*.docx` lock first (`docs/blackbook/export.ps1`).
 
 ## Decisions worth knowing (not derivable from the code)
 
@@ -107,7 +127,6 @@ submission proof goes to the RM faculty; reformat to the venue template once con
   launches at or above `search_similarity_threshold` (0.55). Residuals: `meeting notes` ranks
   `workout_log.txt` first (it says "project meeting"); 3 of 4 off-topic queries return
   labelled low-confidence guesses. Eval scripts were scratch (not in the repo); the numbers are here.
-- One cosmetic label overlap in the graph view between two unlinked files at the bottom.
 - **Monitoring II deliverables are done (2026-09-20):** `docs/DreamOS-Project-Monitoring-II.docx`
   (19-page report; regenerate with `NODE_PATH="$(npm root -g)" node docs/build_report_m2.js`, then
   open it in Word and update the TOC field - docx-js leaves it empty) and `docs/DreamOS-Project-Monitoring-II.pptx` (22 slides mirroring the report;
@@ -117,7 +136,7 @@ submission proof goes to the RM faculty; reformat to the venue template once con
   `"ellipse"`). Viewers tolerate it but real PowerPoint calls the file corrupt, which is why an
   earlier deck produced a `[Repaired]` copy. Always confirm a generated .pptx opens via PowerPoint
   COM (`$app.Presentations.Open(...)`); it can also `Export` slide PNGs for visual QA.
-- Nothing prunes DB rows for deleted files except `backend/scripts/reset_demo_state.py`.
+- Deleted files are now pruned on re-index (and by `reset_demo_state.py`).
 
 ## How to run the demo
 

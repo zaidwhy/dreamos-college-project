@@ -542,3 +542,13 @@ body,
   flex-direction: column;
   gap: 4px;
 }
+
+.model-banner {
+  margin: 8px 16px 0;
+  padding: 8px 12px;
+  border: 1px solid #f0b86e;
+  border-radius: 8px;
+  background: rgba(240, 184, 110, 0.12);
+  color: #f0b86e;
+  font-size: 13px;
+}

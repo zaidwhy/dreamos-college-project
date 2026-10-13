@@ -354,3 +354,78 @@ def test_vectorised_shared_tags_match_the_pairwise_definition():
     kg._add_shared_tag_edges(got, files)
 
     assert got == {(1, 2, kg.SHARED_TAG): round(2 / 4, 4)}
+
+
+# ------------------------------------------------------------ equivalence of the 5,000-file speed-ups
+
+
+def _reference_clusters(pair_weight, min_link, min_size):
+    """The original quadratic average-linkage loop, kept here as the definition."""
+    members = {n: {n} for pair in pair_weight for n in pair}
+    link = dict(pair_weight)
+    while True:
+        best = None
+        for (a, b), total in link.items():
+            average = total / (len(members[a]) * len(members[b]))
+            if average >= min_link and (best is None or average > best[0]):
+                best = (average, a, b)
+        if best is None:
+            break
+        _, keep, absorb = best
+        members[keep] |= members.pop(absorb)
+        merged = {}
+        for (a, b), total in link.items():
+            if {a, b} == {keep, absorb}:
+                continue
+            a, b = (keep if a == absorb else a), (keep if b == absorb else b)
+            pair = (min(a, b), max(a, b))
+            merged[pair] = merged.get(pair, 0.0) + total
+        link = merged
+    return sorted((sorted(m) for m in members.values() if len(m) >= min_size), key=len, reverse=True)
+
+
+def test_heap_clustering_matches_the_original_loop_on_random_graphs():
+    import random
+
+    for seed in range(8):
+        rng = random.Random(seed)
+        n = 70
+        pair_weight = {}
+        for _ in range(180):
+            a, b = sorted(rng.sample(range(1, n + 1), 2))
+            pair_weight[(a, b)] = round(rng.uniform(0.05, 1.0), 6)  # distinct weights: no ties
+        got = kg.cluster_pairs(pair_weight, 0.12, 2)
+        want = _reference_clusters(pair_weight, 0.12, 2)
+        assert sorted(map(tuple, got)) == sorted(map(tuple, want)), f"seed {seed}"
+        assert len(want) > 3  # not vacuous
+
+
+def test_token_indexed_reference_check_matches_the_exhaustive_check(monkeypatch, tmp_path):
+    import random
+
+    rng = random.Random(11)
+    words = ["resume", "final", "v2", "invoice", "march", "notes", "draft", "plan", "2026", "copy", "my_file"]
+    names = set()
+    while len(names) < 60:
+        names.add("_".join(rng.sample(words, rng.randint(1, 3))) + rng.choice([".txt", ".md", ".py"]))
+    files = [{"id": i + 1, "path": n, "name": n} for i, n in enumerate(sorted(names))]
+    texts = {}
+    for f in files:
+        picks = rng.sample(files, 3)
+        body = " ".join(f"see {p['name']}" if rng.random() < 0.5 else f"older {p['name'].rsplit('.', 1)[0]}" for p in picks)
+        texts[f["path"]] = body + " plain words resume final notes"
+        (tmp_path / f["path"]).write_text(texts[f["path"]], encoding="utf-8")
+    monkeypatch.setattr(settings, "vault_dir", tmp_path)
+
+    got = {}
+    kg._add_reference_edges(got, files)
+
+    want = {}
+    for target in files:
+        patterns = kg._reference_patterns(target["name"])
+        for source in files:
+            if source["id"] != target["id"] and any(p.search(texts[source["path"]].lower()) for p in patterns):
+                want[(source["id"], target["id"], kg.REFERENCES)] = 1.0
+
+    assert got == want
+    assert len(want) > 20

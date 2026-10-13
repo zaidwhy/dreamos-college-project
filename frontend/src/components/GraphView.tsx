@@ -18,7 +18,8 @@ const HEIGHT = 780;
 const MARGIN = 70;
 const LABEL_ROOM = 200; // nodes at the right edge still need space for their file-name label
 
-type LayoutNode = GraphNode & SimulationNodeDatum;
+type LabelPlacement = { dx: number; dy: number; anchor: "start" | "end" | "middle" };
+type LayoutNode = GraphNode & SimulationNodeDatum & { label?: LabelPlacement };
 type LayoutLink = SimulationLinkDatum<LayoutNode> & Pick<GraphEdge, "kind" | "weight">;
 
 const PALETTE = ["#7c9eff", "#6fd08c", "#f0b86e", "#d97ad0", "#5fd0d0", "#e08585", "#b0a0ff"];
@@ -59,7 +60,45 @@ function computeLayout(graph: Graph): { nodes: LayoutNode[]; links: LayoutLink[]
     n.x = Math.max(MARGIN, Math.min(WIDTH - LABEL_ROOM, n.x ?? WIDTH / 2));
     n.y = Math.max(MARGIN, Math.min(HEIGHT - MARGIN, n.y ?? HEIGHT / 2));
   }
+  placeLabels(nodes);
   return { nodes, links };
+}
+
+const LABEL_CHAR_WIDTH = 6.4; // px per character at the label font size (monospace-ish estimate)
+const LABEL_HEIGHT = 13;
+
+/**
+ * Gives every node a label position that does not overlap an already placed label. The default is
+ * to the right of the node; when that collides, try left, above, then below. The simulation keeps
+ * circles apart but knows nothing about text, so two unlinked neighbours used to print their file
+ * names on top of each other.
+ */
+function placeLabels(nodes: LayoutNode[]): void {
+  type Box = { x0: number; y0: number; x1: number; y1: number };
+  const placed: Box[] = [];
+  const overlaps = (a: Box, b: Box) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+  const ordered = [...nodes].sort((a, b) => b.degree - a.degree); // connected files get first choice
+
+  for (const n of ordered) {
+    const r = nodeRadius(n);
+    const w = n.name.length * LABEL_CHAR_WIDTH;
+    const x = n.x ?? 0;
+    const y = n.y ?? 0;
+    const options: LabelPlacement[] = [
+      { dx: r + 5, dy: 4, anchor: "start" },
+      { dx: -(r + 5), dy: 4, anchor: "end" },
+      { dx: 0, dy: -(r + 6), anchor: "middle" },
+      { dx: 0, dy: r + 15, anchor: "middle" },
+    ];
+    const boxOf = (o: LabelPlacement): Box => {
+      const left = o.anchor === "start" ? x + o.dx : o.anchor === "end" ? x + o.dx - w : x - w / 2;
+      return { x0: left, x1: left + w, y0: y + o.dy - LABEL_HEIGHT + 3, y1: y + o.dy + 3 };
+    };
+    const inside = (b: Box) => b.x0 >= 0 && b.x1 <= WIDTH && b.y0 >= 0 && b.y1 <= HEIGHT;
+    const chosen = options.find((o) => inside(boxOf(o)) && !placed.some((p) => overlaps(boxOf(o), p))) ?? options[0];
+    n.label = chosen;
+    placed.push(boxOf(chosen));
+  }
 }
 
 /** Shortens a directed edge so its arrowhead stops at the target node's rim, not its centre. */
@@ -209,7 +248,12 @@ export function GraphView() {
                 stroke={selectedId === n.id ? "#ffffff" : "#0f1115"}
                 strokeWidth={selectedId === n.id ? 2.5 : 1.5}
               />
-              <text x={nodeRadius(n) + 5} y={4} className={selectedId === n.id ? "graph-label graph-label-active" : "graph-label"}>
+              <text
+                x={n.label?.dx ?? nodeRadius(n) + 5}
+                y={n.label?.dy ?? 4}
+                textAnchor={n.label?.anchor ?? "start"}
+                className={selectedId === n.id ? "graph-label graph-label-active" : "graph-label"}
+              >
                 {n.name}
               </text>
             </g>

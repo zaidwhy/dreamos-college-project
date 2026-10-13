@@ -58,15 +58,23 @@ def _prepare_vectors(vectors: dict[str, list[float]]) -> dict[str, list[float]]:
     return {path: [x - m for x, m in zip(vec, mean)] for path, vec in vectors.items()}
 
 
-def _reference_patterns(name: str) -> list[re.Pattern]:
-    """Patterns whose appearance in another file's text counts as a reference to `name`."""
+def _reference_needles(name: str) -> list[str]:
+    """Strings whose appearance in another file's text counts as a reference to `name`."""
     needles = [name.lower()]
     stem = name.rsplit(".", 1)[0].lower()
     # A bare stem like "notes" would match ordinary prose everywhere, so only trust stems
     # that look like deliberate identifiers (long enough, with a separator or digit).
     if len(stem) >= 6 and re.search(r"[_\-\d]", stem):
         needles.append(stem)
-    return [re.compile(rf"(?<![a-z0-9]){re.escape(n)}(?![a-z0-9])") for n in needles]
+    return needles
+
+
+def _needle_pattern(needle: str) -> re.Pattern:
+    return re.compile(rf"(?<![a-z0-9]){re.escape(needle)}(?![a-z0-9])")
+
+
+def _reference_patterns(name: str) -> list[re.Pattern]:
+    return [_needle_pattern(n) for n in _reference_needles(name)]
 
 
 def _add_similar_edges(edges: dict, vectors: dict[str, list[float]], by_path: dict) -> None:
@@ -96,7 +104,18 @@ def _add_similar_edges(edges: dict, vectors: dict[str, list[float]], by_path: di
                 edges[(low, high, SIMILAR)] = round(score, 4)
 
 
+_TOKEN = re.compile(r"[a-z0-9]+")
+
+
 def _add_reference_edges(edges: dict, files: list) -> None:
+    """A reference is a bounded occurrence of a file's name (or deliberate-looking stem) in another
+    file's text. Checking every (source, target) pair with a regex is quadratic: 50 million
+    searches at 5,000 files, which was 170 s of a 174 s graph rebuild. Instead each needle is
+    filed under its rarest alphanumeric token, and a source text is only checked against the
+    needles whose token it contains. A bounded occurrence of a needle always contains each of
+    the needle's tokens as a whole alphanumeric run, so no reference is lost; the result is
+    identical to the exhaustive check (a test compares the two).
+    """
     texts: dict[int, str] = {}
     for f in files:
         try:
@@ -104,13 +123,33 @@ def _add_reference_edges(edges: dict, files: list) -> None:
         except (ExtractionError, OSError):
             texts[f["id"]] = ""
 
+    needles: list[tuple[int, list[str], re.Pattern]] = []
+    frequency: Counter = Counter()
     for target in files:
-        patterns = _reference_patterns(target["name"])
-        for source in files:
-            if source["id"] == target["id"]:
-                continue
-            if any(p.search(texts[source["id"]]) for p in patterns):
-                edges[(source["id"], target["id"], REFERENCES)] = 1.0
+        for needle in _reference_needles(target["name"]):
+            tokens = _TOKEN.findall(needle)
+            needles.append((target["id"], tokens, _needle_pattern(needle)))
+            frequency.update(set(tokens))
+
+    by_token: dict[str, list[tuple[int, re.Pattern]]] = {}
+    unindexed: list[tuple[int, re.Pattern]] = []  # needles with no alphanumeric run at all
+    for target_id, tokens, pattern in needles:
+        if not tokens:
+            unindexed.append((target_id, pattern))
+            continue
+        rarest = min(tokens, key=lambda t: (frequency[t], t))
+        by_token.setdefault(rarest, []).append((target_id, pattern))
+
+    for source_id, text in texts.items():
+        if not text:
+            continue
+        candidates = list(unindexed)
+        for token in set(_TOKEN.findall(text)):
+            candidates.extend(by_token.get(token, ()))
+        for target_id, pattern in candidates:
+            key = (source_id, target_id, REFERENCES)
+            if target_id != source_id and key not in edges and pattern.search(text):
+                edges[key] = 1.0
 
 
 def _add_shared_tag_edges(edges: dict, files: list) -> None:
@@ -217,14 +256,72 @@ def related_files(path: str, limit: int = 5) -> list[RelatedFile]:
     return sorted(merged.values(), key=lambda r: r.weight, reverse=True)[:limit]
 
 
+def cluster_pairs(pair_weight: dict[tuple[int, int], float], min_link: float, min_size: int) -> list[list[int]]:
+    """Average-linkage agglomerative clustering over undirected pair weights (low id first).
+
+    Repeatedly merges the two groups with the highest average member-pair weight (missing
+    pairs count as 0) until no pair of groups averages at or above `min_link`. Uses per-group
+    adjacency and a lazily invalidated max-heap, so a merge only touches the merged group's
+    neighbours; the earlier version rescanned and rebuilt the whole link table on every merge
+    (20 s at 5,000 files). Ties are broken by lowest group ids, so results are deterministic.
+    """
+    import heapq
+
+    members: dict[int, set[int]] = {}
+    adjacency: dict[int, dict[int, float]] = {}  # group -> {other group: summed member-pair weight}
+    for (a, b), weight in pair_weight.items():
+        members.setdefault(a, {a})
+        members.setdefault(b, {b})
+        adjacency.setdefault(a, {})[b] = weight
+        adjacency.setdefault(b, {})[a] = weight
+
+    version = {g: 0 for g in members}
+    heap: list[tuple[float, int, int, int, int]] = []
+
+    def push(a: int, b: int) -> None:
+        low, high = (a, b) if a < b else (b, a)
+        average = adjacency[low][high] / (len(members[low]) * len(members[high]))
+        if average >= min_link:
+            heapq.heappush(heap, (-average, low, high, version[low], version[high]))
+
+    for a, neighbours in adjacency.items():
+        for b in neighbours:
+            if a < b:
+                push(a, b)
+
+    while heap:
+        _, keep, absorb, v_keep, v_absorb = heapq.heappop(heap)
+        if keep not in members or absorb not in members:
+            continue
+        if version[keep] != v_keep or version[absorb] != v_absorb:
+            continue  # stale: one side has merged since this entry was pushed
+
+        members[keep] |= members.pop(absorb)
+        version[keep] += 1
+        del version[absorb]
+        del adjacency[keep][absorb]
+        for other, total in adjacency.pop(absorb).items():
+            if other == keep:
+                continue
+            adjacency[keep][other] = adjacency[keep].get(other, 0.0) + total
+            adjacency[other][keep] = adjacency[keep][other]
+            del adjacency[other][absorb]
+        for other in adjacency[keep]:
+            push(keep, other)
+
+    return sorted(
+        (sorted(m) for m in members.values() if len(m) >= min_size),
+        key=len,
+        reverse=True,
+    )
+
+
 def clusters(min_size: int | None = None) -> list[list[int]]:
     """Groups of closely related files (any edge kind), largest first, as lists of file ids.
 
-    Average-linkage agglomerative clustering over the stored edges: repeatedly merge the two
-    groups with the highest average edge weight between their members, stopping once no pair
-    of groups averages above `graph_cluster_min_link`. Plain connected components would chain
-    two unrelated groups together through a single weak edge; here that edge is averaged over
-    every member pair and stays far below the bar.
+    Average-linkage clustering over the stored edges (see `cluster_pairs`). Plain connected
+    components would chain two unrelated groups together through a single weak edge; here that
+    edge is averaged over every member pair and stays far below the bar.
     """
     min_size = min_size or settings.workspace_min_cluster_size
     with connection() as conn:
@@ -236,31 +333,4 @@ def clusters(min_size: int | None = None) -> list[list[int]]:
         pair = (min(e["src_id"], e["dst_id"]), max(e["src_id"], e["dst_id"]))
         pair_weight[pair] = max(pair_weight.get(pair, 0.0), e["weight"])
 
-    members: dict[int, set[int]] = {n: {n} for pair in pair_weight for n in pair}
-    link = dict(pair_weight)  # (group, group) -> summed member-pair weight, low id first
-
-    while True:
-        best = None
-        for (a, b), total in link.items():
-            average = total / (len(members[a]) * len(members[b]))
-            if average >= settings.graph_cluster_min_link and (best is None or average > best[0]):
-                best = (average, a, b)
-        if best is None:
-            break
-
-        _, keep, absorb = best
-        members[keep] |= members.pop(absorb)
-        merged: dict[tuple[int, int], float] = {}
-        for (a, b), total in link.items():
-            if {a, b} == {keep, absorb}:
-                continue
-            a, b = (keep if a == absorb else a), (keep if b == absorb else b)
-            pair = (min(a, b), max(a, b))
-            merged[pair] = merged.get(pair, 0.0) + total
-        link = merged
-
-    return sorted(
-        (sorted(m) for m in members.values() if len(m) >= min_size),
-        key=len,
-        reverse=True,
-    )
+    return cluster_pairs(pair_weight, settings.graph_cluster_min_link, min_size)
