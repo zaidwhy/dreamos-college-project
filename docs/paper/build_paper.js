@@ -154,6 +154,26 @@ function figure(file, widthDxa) {
   });
 }
 
+// Three equal columns, each author centred over name and roll number.
+function authorTable(authors) {
+  const none = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
+  const noBorders = { top: none, bottom: none, left: none, right: none };
+  const w = Math.floor(CONTENT_W / authors.length);
+  return new Table({
+    width: { size: w * authors.length, type: WidthType.DXA },
+    columnWidths: authors.map(() => w),
+    borders: { top: none, bottom: none, left: none, right: none, insideHorizontal: none, insideVertical: none },
+    rows: [new TableRow({ children: authors.map(([name, roll]) => new TableCell({
+      borders: noBorders, width: { size: w, type: WidthType.DXA },
+      margins: { top: 20, bottom: 20, left: 60, right: 60 },
+      children: [
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: name, font: FONT, size: 24, bold: true })] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: roll, font: FONT, size: T9 })] }),
+      ],
+    })) })],
+  });
+}
+
 // ---------------------------------------------------------------- title block (1 column)
 const titleBlock = [
   new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 0, after: 100 }, children: [
@@ -164,10 +184,16 @@ const titleBlock = [
         new TextRun({ text: "Anonymous submission for double-blind review", font: FONT, size: T10, italics: true }),
       ] })]
     : [
-        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 10 }, children: [
-          new TextRun({ text: "Zaid Ali Syed, Om Vyas and Krushna Kadam", font: FONT, size: 22 }),
+        authorTable([
+          ["Zaid Ali Syed", "Roll No. 2305139"],
+          ["Om Vyas", "Roll No. 2305170"],
+          ["Krushna Kadam", "Roll No. 2305165"],
+        ]),
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 40, after: 10 }, children: [
+          new TextRun({ text: "Under the guidance of ", font: FONT, size: T10, italics: true }),
+          new TextRun({ text: "Dr. Minakshi R. Rajput", font: FONT, size: T10, bold: true }),
         ] }),
-        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 10 }, children: [
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 40, after: 10 }, children: [
           new TextRun({ text: "Department of Information Technology, Institute of Information and Communication Technology (IICT)", font: FONT, size: T9, italics: true }),
         ] }),
         new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 10 }, children: [
@@ -282,7 +308,7 @@ const part5 = [
   sectionHead("V", "Experimental Setup"),
   p("All runs used one laptop (AMD Ryzen 7 6800H, 16 GB RAM, Windows 11, CPU only) with nomic-embed-text and llama3.2 3B served by Ollama. The suite of 123 automated tests runs offline against fixtures and on every push in continuous integration."),
   subHead("A. Retrieval comparison"),
-  p(`The corpus is the ${RETR.files}-file demonstration vault: deliberately messy text, Markdown and source files (CVs, invoices, meeting notes, a recipe, scripts). We wrote ${RETR.queries} queries with their relevant files before running any system. Each query is partitioned automatically by whether any of its content words, after the system's own stop-word and plural folding, occurs in a relevant file's name or text: ${RETR.queries_sharing_words} do, ${RETR.queries_no_shared_words} do not. Four systems return at most ${RETR.k} files: (i) filename match, a lexical match on names only, standing in for name-index tools [7]; (ii) BM25 [12] over name and text, standing in for lexical content indexes [5], [6]; (iii) embedding only, DreamOS without the keyword boost and cut-off; (iv) DreamOS as shipped. Metrics are Hit@1, Hit@3 and mean reciprocal rank (MRR), with 95% Wilson intervals [17] on Hit@1.`),
+  p(`The corpus is the ${RETR.files}-file demonstration vault: deliberately messy text, Markdown and source files (CVs, invoices, meeting notes, a recipe, scripts). We wrote ${RETR.queries} queries with their relevant files before running any system. Each query is partitioned automatically by whether any of its content words, after the system's own stop-word and plural folding, occurs in a relevant file's name or text: ${RETR.queries_sharing_words} do, ${RETR.queries_no_shared_words} do not. Four systems return at most ${RETR.k} files: (i) filename match, a lexical match on names only, standing in for name-index tools [7]; (ii) BM25 [12] over name and text, standing in for lexical content indexes [5], [6]; (iii) embedding only, DreamOS without the keyword boost and cut-off; (iv) DreamOS as shipped. Metrics are Hit@1, Hit@3 and mean reciprocal rank (MRR), with 95% Wilson intervals [17] on Hit@1, following standard information-retrieval evaluation practice [18].`),
   subHead("B. Scale evaluation"),
   p("Synthetic vaults of 500, 2,000 and 5,000 text files across twelve topics were generated, about half with one distractor sentence from another topic. Each size ran in a fresh process with a fresh database and the real models. We measured indexing throughput (including the graph rebuild that follows an index pass), graph rebuild time, the latency of 36 queries, and precision at 5 against the generated topic label. The scripts (bench_scale.py, eval_retrieval.py) are part of the project repository."),
 ];
@@ -360,7 +386,7 @@ const fig6 = [
 
 const part9 = [
   sectionHead("VII", "Discussion and Threats to Validity"),
-  p("Meaning-based matching is what separates the systems, and it comes from the embedding model, not from the surrounding engineering; what DreamOS adds is a single interface over retrieval, action and memory, evidence-ordered resolution of follow-ups, and a privacy statement that can be falsified. The negative results matter as much: the keyword boost trades a paraphrase query for several shared-word ones, and the dense pairwise-similarity matrix still grows with the square of the number of files (about 200 MB at 5,000 files), which is the next limit rather than the graph rebuild time."),
+  p("Meaning-based matching is what separates the systems, and it comes from the embedding model, not from the surrounding engineering; what DreamOS adds is a single interface over retrieval, action and memory, evidence-ordered resolution of follow-ups, and a privacy statement that can be falsified. The negative results matter as much: the keyword boost trades a paraphrase query for several shared-word ones, and the dense pairwise-similarity matrix still grows with the square of the number of files (about 200 MB at 5,000 files), which is the next limit rather than the graph rebuild time; beyond roughly ten thousand files it would be replaced by an approximate index such as FAISS [19] or HNSW [15]. Public benchmarks such as MTEB [20] rank embedding models on standard tasks, but they do not measure a file manager’s conversational behaviour or its failure modes, which is why we ran a task-specific comparison."),
   p("Threats to validity. Internal: the authors wrote and labelled the queries, which risks unconscious favouring of the system; labels were fixed before the run, the partition is computed rather than judged, and failures are listed. Baselines are reference implementations of the lexical class (name match, BM25 with the system's own tokeniser), not the Windows Search, Spotlight or Everything products, so Table III supports a claim about lexical versus embedding retrieval, not about any named product. Construct: precision on synthetic topic labels measures topic separation, not usefulness. External: 37 files and 36 queries, one author's vault, one machine, one pair of small models; intent classification is 88% correct (23 of 26) on held-out phrasings and borderline phrasing is misrouted. Reproducibility: all numbers in this paper are read from committed result files produced by the two scripts above."),
 
   sectionHead("VIII", "Conclusion"),
@@ -391,6 +417,9 @@ const refs = [
   refEntry(15, "Y. A. Malkov and D. A. Yashunin, “Efficient and Robust Approximate Nearest Neighbor Search Using Hierarchical Navigable Small World Graphs,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 42, no. 4, 2020."),
   refEntry(16, "Z. Nussbaum, J. X. Morris, B. Duderstadt and A. Mulyar, “Nomic Embed: Training a Reproducible Long Context Text Embedder,” arXiv:2402.01613, 2024."),
   refEntry(17, "E. B. Wilson, “Probable inference, the law of succession, and statistical inference,” J. Amer. Statist. Assoc., vol. 22, no. 158, 1927."),
+  refEntry(18, "C. D. Manning, P. Raghavan and H. Schütze, Introduction to Information Retrieval. Cambridge, U.K.: Cambridge University Press, 2008."),
+  refEntry(19, "J. Johnson, M. Douze and H. Jégou, “Billion-scale similarity search with GPUs,” IEEE Trans. Big Data, vol. 7, no. 3, 2021."),
+  refEntry(20, "N. Muennighoff, N. Tazi, L. Magne and N. Reimers, “MTEB: Massive Text Embedding Benchmark,” in Proc. Conf. of the European Chapter of the Association for Computational Linguistics (EACL), 2023."),
 ];
 
 // ---------------------------------------------------------------- document
