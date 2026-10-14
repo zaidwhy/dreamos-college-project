@@ -621,7 +621,12 @@ const appendices = [
   ]),
   h2("Appendix C Research paper"),
   para("A research paper on this project, prepared in IEEE conference format for the Research Methodology CA4 requirement, is included with this report (docs/paper/DreamOS-IEEE-Paper.pdf). Its figures, tables and measurements are the same as those in this report."),
-  h2("Appendix D Papers and certificates"),
+  h2("Appendix D Individual contribution"),
+  para("Zaid Ali Syed (Roll No. 2305139): system architecture and design; implementation of the six modules, the privacy audit and the desktop application; the scale benchmark, the retrieval comparison and the performance fixes; the research paper and the technical content of this report."),
+  para("Om Vyas (Roll No. 2305170): testing and evaluation, including the test cases, checking of search quality and validation of results against expected answers."),
+  para("Krushna Kadam (Roll No. 2305165): documentation and presentation, including report structure and formatting, the slides and review of the final deliverables."),
+  para("All three members took part in design discussions, demonstration rehearsal and review under the guidance of Dr. Minakshi R. Rajput."),
+  h2("Appendix E Papers and certificates"),
   para("No research paper has been accepted or presented as part of this project at the time of writing. Acceptance letters and presentation certificates, if any are issued, will be attached here."),
 ];
 

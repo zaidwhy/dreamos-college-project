@@ -106,15 +106,29 @@ reorganises files only earns trust if undoing is as reliable as doing."
 
 **Do:** in a terminal in `backend/`: `./.venv/Scripts/python.exe -m pytest -q`
 
-**Say:** "110 tests, fully offline - the embeddings and LLM are mocked, so they need no Ollama. They also
+**Say:** "123 tests, fully offline - the embeddings and LLM are mocked, so they need no Ollama. They also
 run on every push in CI. Beyond unit tests I measured the intent router on the real model: 88% on
 phrasings it was not tuned on, and the failures are documented, not hidden."
+
+## 9b. Results and validation (90 sec)
+
+**Do:** open the **Privacy** tab, then show slides "Does meaning beat keywords?" and "How we know
+the results are right" in `docs/deck/DreamOS-Final-Monitoring.pptx`.
+
+**Say:** "The Privacy tab reads the live configuration: every address is this computer, and
+`netstat` confirms the service only listens on loopback. To check retrieval against something other
+than ourselves, I wrote 36 questions and their correct files down before running anything, and
+compared DreamOS with a keyword index and a filename search. DreamOS puts the right file first for
+94% of questions, against 56% and 33%. For the 10 questions that share no word with the file, the
+keyword systems score zero by construction and DreamOS scores 0.80. It is a small set, so the report
+shows error bars and lists the two misses. At scale, 5,000 files rebuild the graph in about 3
+seconds; testing found an all-pairs check that was 98% of the time before the fix."
 
 ## 10. Scope and next steps (45 sec)
 
 **Say:** "All six proposed modules are implemented, tested and packaged as a Windows installer. What
-remains is depth, not features: better retrieval for short queries, scaling the graph beyond a small
-vault, and the final report and paper."
+remains is depth, not features: better retrieval for short queries, an approximate index beyond
+about ten thousand files, and an evaluation on real documents with consent."
 
 ---
 

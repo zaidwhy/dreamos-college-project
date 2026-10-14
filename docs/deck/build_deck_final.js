@@ -1,5 +1,5 @@
 // Builds docs/deck/DreamOS-Final-Monitoring.pptx: an immersive, plain-language deck for the
-// final project monitoring (13 Oct 2026, internal and external examiners).
+// final project monitoring (14 Oct 2026, internal and external examiners).
 // Run from the repo root:  NODE_PATH="$(npm root -g)" node docs/deck/build_deck_final.js
 // Numbers come from backend/data/bench/results.json, the same source as the blackbook report.
 const pptxgen = require("pptxgenjs");
@@ -15,6 +15,8 @@ const DIAG = path.join(REPO, "docs", "diagrams");
 const SHOTS = path.join(REPO, "docs", "screenshots");
 const BENCH = JSON.parse(fs.readFileSync(path.join(REPO, "docs", "benchmarks", "scale_results.json"), "utf8"));
 const BEFORE = JSON.parse(fs.readFileSync(path.join(REPO, "docs", "benchmarks", "scale_results_before.json"), "utf8"));
+const RETR = JSON.parse(fs.readFileSync(path.join(REPO, "docs", "benchmarks", "retrieval_comparison.json"), "utf8"));
+const MID = JSON.parse(fs.readFileSync(path.join(REPO, "docs", "benchmarks", "scale_results_vectorised_only.json"), "utf8"));
 const OUT = path.join(__dirname, "DreamOS-Final-Monitoring.pptx");
 
 const C = {
@@ -138,7 +140,7 @@ async function main() {
     s.addImage({ path: path.join(REPO, "docs", "assets", "mgm-logo.png"), x: 9.95, y: 0.75, w: 2.6, h: 1.485 });
     s.addText("DreamOS", { x: 0.7, y: 2.0, w: 12, h: 1.4, fontFace: HEAD, fontSize: 88, bold: true, color: C.text, margin: 0 });
     s.addText("Find your files by what they are about, not by what they are called", { x: 0.75, y: 3.45, w: 11.5, h: 0.6, fontFace: BODY, fontSize: 24, color: C.teal, margin: 0 });
-    s.addText("Final Year B.Tech Project  |  Final Monitoring, 13 October 2026", { x: 0.75, y: 4.25, w: 11, h: 0.4, fontFace: BODY, fontSize: 16, color: C.soft, margin: 0 });
+    s.addText("Final Year B.Tech Project  |  Final Monitoring, 14 October 2026", { x: 0.75, y: 4.25, w: 11, h: 0.4, fontFace: BODY, fontSize: 16, color: C.soft, margin: 0 });
     s.addText([
       { text: "Zaid Ali Syed (2305139)   Om Vyas (2305170)   Krushna Kadam (2305165)", options: { breakLine: true } },
       { text: "Under the guidance of Dr. Minakshi R. Rajput", options: { breakLine: true } },
@@ -311,7 +313,7 @@ async function main() {
     s.addText("A real example", { x: 7.8, y: 2.25, w: 4.6, h: 0.4, fontFace: HEAD, fontSize: 16, bold: true, color: C.amber, margin: 0 });
     s.addText("“find something about a meeting”", { x: 7.8, y: 2.8, w: 4.6, h: 0.7, fontFace: HEAD, fontSize: 20, italic: true, color: C.text, margin: 0 });
     s.addText("It returns the team notes, though the file names say nothing about meetings.", { x: 7.8, y: 3.6, w: 4.6, h: 1.2, fontFace: BODY, fontSize: 17, color: C.soft, margin: 0, valign: "top" });
-    s.addText("Honest note: very short queries are harder, and we measure that on slides 23 and 24.", { x: 7.8, y: 5.4, w: 4.6, h: 0.9, fontFace: BODY, fontSize: 14, italic: true, color: C.dim, margin: 0, valign: "top" });
+    s.addText("Honest note: very short queries are harder, and we measure that in the results section.", { x: 7.8, y: 5.4, w: 4.6, h: 0.9, fontFace: BODY, fontSize: 14, italic: true, color: C.dim, margin: 0, valign: "top" });
   }
 
   // 11. KEY IDEA: knowledge graph ----------------------------------------
@@ -368,7 +370,7 @@ async function main() {
       [ic.server, "Service", "Python with FastAPI"],
       [ic.robot, "AI models", "Ollama running nomic-embed-text (meaning) and llama3.2 (understanding)"],
       [ic.db, "Storage", "SQLite for details and history; ChromaDB for meaning vectors"],
-      [ic.flask, "Testing", "pytest with 116 automated tests; GitHub Actions on every push"],
+      [ic.flask, "Testing", "pytest with 123 automated tests; GitHub Actions on every push"],
     ];
     layers.forEach(([img, t, d], i) => {
       const y = 1.9 + i * 0.98;
@@ -395,7 +397,7 @@ async function main() {
   {
     const s = slide(pres, bgWarm, "Part 4 - Testing", "How we checked it works");
     const levels = [
-      ["Small checks", "One piece at a time: does the ranking, the memory rule and the reversal work?", "116 automated tests, run offline in under a minute"],
+      ["Small checks", "One piece at a time: does the ranking, the memory rule and the reversal work?", "123 automated tests, run offline in under a minute"],
       ["Joined-up checks", "Pieces together: index a folder, search it, organise it, undo it", "Run against the real AI models"],
       ["Real app", "The desktop window itself, driven like a user would drive it", "Opened and checked inside the running app"],
     ];
@@ -425,11 +427,11 @@ async function main() {
 
   // 18. SCALE RESULT: speed of building -----------------------------------
   {
-    const s = slide(pres, bgMain, "Part 4 - Results", "Rebuilding the map of 5,000 files takes two minutes");
+    const s = slide(pres, bgMain, "Part 4 - Results", `Rebuilding the map of 5,000 files takes ${r1(b5k.graph_rebuild_seconds)} seconds`);
     s.addChart(pres.charts.BAR, [{ name: "Knowledge-graph rebuild (seconds)", labels: ["500 files", "2,000 files", "5,000 files"], values: [Number(r1(b5.graph_rebuild_seconds)), Number(r1(b2.graph_rebuild_seconds)), Number(r1(b5k.graph_rebuild_seconds))] }], {
       x: 0.7, y: 1.9, w: 6.6, h: 4.8, barDir: "col", chartColors: [C.teal],
       catAxisLabelColor: C.soft, valAxisLabelColor: C.soft, valGridLine: { color: C.line, size: 0.5 }, catGridLine: { style: "none" },
-      showValue: true, dataLabelColor: C.text, dataLabelFontSize: 14, showLegend: false,
+      showValue: true, dataLabelFormatCode: "0.0", valAxisLabelFormatCode: "0", dataLabelColor: C.text, dataLabelFontSize: 14, showLegend: false,
       showTitle: true, title: "Rebuilding the file-relationship map (seconds, lower is better)", titleColor: C.text, titleFontSize: 14,
     });
     glass(s, 7.7, 1.9, 5.0, 4.8, C.teal);
@@ -443,16 +445,18 @@ async function main() {
   {
     const s = slide(pres, bgWarm, "Part 4 - Results", "Before and after fixing what the tests exposed");
     s.addChart(pres.charts.BAR, [
-      { name: "Before", labels: ["Knowledge-graph rebuild at 2,000 files"], values: [Number(r1(f2.graph_rebuild_seconds))] },
-      { name: "After", labels: ["Knowledge-graph rebuild at 2,000 files"], values: [Number(r1(b2.graph_rebuild_seconds))] },
+      { name: "Original", labels: ["2,000 files", "5,000 files"], values: [Number(r1(f2.graph_rebuild_seconds)), null] },
+      { name: "Step 1: vectorised", labels: ["2,000 files", "5,000 files"], values: [Number(r1(MID["2000"].graph_rebuild_seconds)), Number(r1(MID["5000"].graph_rebuild_seconds))] },
+      { name: "Step 2: final", labels: ["2,000 files", "5,000 files"], values: [Number(r1(b2.graph_rebuild_seconds)), Number(r1(b5k.graph_rebuild_seconds))] },
     ], {
-      x: 0.7, y: 1.9, w: 6.0, h: 4.8, barDir: "col", barGrouping: "clustered", chartColors: [C.rose, C.teal],
+      x: 0.7, y: 1.9, w: 6.0, h: 4.8, barDir: "col", barGrouping: "clustered", chartColors: [C.rose, C.amber, C.teal],
       catAxisLabelColor: C.soft, valAxisLabelColor: C.soft, valGridLine: { color: C.line, size: 0.5 }, catGridLine: { style: "none" },
-      showValue: true, dataLabelColor: C.text, dataLabelFontSize: 14, showLegend: true, legendPos: "b", legendColor: C.soft,
+      showValue: true, dataLabelFormatCode: "0.0", dataLabelColor: C.text, dataLabelFontSize: 12, showLegend: true, legendPos: "b", legendColor: C.soft,
+      showTitle: true, title: "Rebuilding the file-relationship map (seconds; the original was not run at 5,000)", titleColor: C.text, titleFontSize: 12,
     });
     bullets(s, [
       "Every embedding call waited about one second. The cause: the name \"localhost\" was tried over IPv6 first. Fix: use 127.0.0.1. Measured: about 1 s down to about 15 ms per call.",
-      `The relationship map grew with the square of the file count. Fix: vectorise it with NumPy, and test that the answers are unchanged.`,
+      `The relationship map grew with the square of the file count. Step 1 vectorised it; then profiling showed 98% of the remaining time was one all-pairs check. Step 2 replaced it. Same links, ${r1(MID["5000"].graph_rebuild_seconds)} s down to ${r1(b5k.graph_rebuild_seconds)} s at 5,000 files, with tests that the answers are unchanged.`,
       "A follow-up about a new topic was answered with an old result. Fix: direct evidence now wins over the AI's guess, with a test that fails on the old behaviour.",
     ], 7.1, 1.95, 5.6, 4.9, 15);
   }
@@ -472,13 +476,54 @@ async function main() {
     ], 5.95, 2.8, 6.5, 3.5, 16);
   }
 
+  // 20b. HEAD-TO-HEAD: meaning versus keywords -----------------------------
+  {
+    const A = RETR.all, SHW = RETR.sharing_words, NSW = RETR.no_shared_words;
+    const s = slide(pres, bgCool, "Part 4 - Results", "Does meaning beat keywords? We measured it");
+    const names = ["Filename match", "Keyword index (BM25)", "Embeddings only", "DreamOS"];
+    const keys = ["filename", "keyword", "embedding", "dreamos"];
+    s.addChart(pres.charts.BAR, [
+      { name: `Question shares a word with the file (${RETR.queries_sharing_words})`, labels: names, values: keys.map((k) => Number(SHW[k].hit_at_1.toFixed(2))) },
+      { name: `No shared word (${RETR.queries_no_shared_words})`, labels: names, values: keys.map((k) => Number(NSW[k].hit_at_1.toFixed(2))) },
+    ], {
+      x: 0.7, y: 1.9, w: 7.2, h: 4.8, barDir: "col", barGrouping: "clustered", chartColors: [C.sky, C.amber],
+      catAxisLabelColor: C.soft, valAxisLabelColor: C.soft, valGridLine: { color: C.line, size: 0.5 }, catGridLine: { style: "none" },
+      valAxisMaxVal: 1, showValue: true, dataLabelFormatCode: "0.00", dataLabelColor: C.text, dataLabelFontSize: 12, showLegend: true, legendPos: "b", legendColor: C.soft,
+      showTitle: true, title: "Share of questions where the right file is ranked first", titleColor: C.text, titleFontSize: 13,
+    });
+    glass(s, 8.3, 1.9, 4.4, 4.8, C.teal);
+    s.addText(`${Math.round(A.dreamos.hit_at_1 * 100)}%`, { x: 8.7, y: 2.1, w: 3.7, h: 0.9, fontFace: HEAD, fontSize: 44, bold: true, color: C.teal, margin: 0 });
+    s.addText(`first-place answers over ${RETR.queries} questions, against ${Math.round(A.keyword.hit_at_1 * 100)}% for a keyword index and ${Math.round(A.filename.hit_at_1 * 100)}% for filename search`, { x: 8.7, y: 3.0, w: 3.7, h: 1.1, fontFace: BODY, fontSize: 14, color: C.soft, margin: 0, valign: "top" });
+    s.addText(`${NSW.dreamos.hit_at_1.toFixed(2)} vs 0.00`, { x: 8.7, y: 4.3, w: 3.7, h: 0.7, fontFace: HEAD, fontSize: 30, bold: true, color: C.amber, margin: 0 });
+    s.addText("when the question shares no word with the file, e.g. “present for my mother” finds the list that says “Mom's birthday”", { x: 8.7, y: 5.0, w: 3.7, h: 1.4, fontFace: BODY, fontSize: 13, color: C.soft, margin: 0, valign: "top" });
+  }
+
+  // 20c. VALIDATION: why the numbers can be trusted ------------------------
+  {
+    const s = slide(pres, bgMain, "Part 4 - Results validation", "How we know the results are right");
+    const items = [
+      ["Questions fixed before the run", `${RETR.queries} questions and their correct files were written down first, so the test could not be bent to fit.`],
+      ["Honest split", "A computer, not us, sorted questions into “shares a word” and “no shared word”."],
+      ["Error bars shown", "Small test set, so every score has a 95% interval; the report states the gaps that are not significant."],
+      ["Fixes proved, not assumed", "Each speed-up was checked against the original code on random data and produces identical results."],
+      ["Failures listed", "Two misses and one trade-off are reported, not hidden."],
+      ["Privacy checkable", "Anyone can run netstat and see the service only listens on this computer."],
+    ];
+    items.forEach(([t, d], i) => {
+      const x = 0.7 + (i % 2) * 6.1, y = 1.9 + Math.floor(i / 2) * 1.6;
+      glass(s, x, y, 5.8, 1.4, [C.teal, C.sky, C.amber, C.violet, C.rose, C.teal][i]);
+      s.addText(t, { x: x + 0.3, y: y + 0.1, w: 5.3, h: 0.4, fontFace: HEAD, fontSize: 16, bold: true, color: C.text, margin: 0 });
+      s.addText(d, { x: x + 0.3, y: y + 0.52, w: 5.3, h: 0.85, fontFace: BODY, fontSize: 13, color: C.soft, margin: 0, valign: "top" });
+    });
+  }
+
   // 21. WHERE IT STRUGGLES -------------------------------------------------
   {
     const s = slide(pres, bgWarm, "Part 5 - Honest limits", "Where DreamOS is weaker");
     const items = [
       ["One-word questions", "“meeting notes” can rank a file that only mentions a meeting above the real notes. We show such results as guesses, and never open a guess."],
       ["Borderline wording", "A 3-billion-parameter model sometimes misreads the intent of a sentence. Measured on new phrasings: 88% correct."],
-      ["Very large folders", "Some steps still grow with the square of the file count. Fine for thousands of files; tens of thousands would need a better method."],
+      ["Very large folders", "Comparing every file with every other uses memory that grows with the square of the file count (about 200 MB at 5,000 files). Fine for thousands; tens of thousands would need an approximate method."],
       ["One computer, Windows only", "Not designed for several users, phones, or syncing between machines."],
     ];
     items.forEach(([t, d], i) => {
@@ -496,12 +541,31 @@ async function main() {
       "Six working modules, tested end to end",
       "A privacy check you can run yourself",
       "Tested at 5,000 files, with the weak spots reported",
-      "Three real defects found and fixed during testing",
+      `Measured against keyword search: ${Math.round(RETR.all.dreamos.hit_at_1 * 100)}% vs ${Math.round(RETR.all.keyword.hit_at_1 * 100)}% first-place answers`,
+      "Real defects found by testing and fixed, each with a test",
     ];
     bullets(s, won, 0.8, 2.0, 6.2, 4.0, 19);
     glass(s, 7.5, 2.0, 5.2, 4.2, C.teal);
     s.addText("Future scope", { x: 7.9, y: 2.25, w: 4.5, h: 0.45, fontFace: HEAD, fontSize: 18, bold: true, color: C.teal, margin: 0 });
     bullets(s, ["Test on real documents, with consent", "Faster method for very large folders", "Scanned documents and images", "Installer that includes the AI models"], 7.9, 2.85, 4.5, 3.2, 16);
+  }
+
+  // 22b. INDIVIDUAL CONTRIBUTION -------------------------------------------
+  {
+    const s = slide(pres, bgWarm, "Part 5 - Team", "Individual contribution");
+    const people = [
+      ["Zaid Ali Syed", "2305139", C.teal, ["System architecture and all six modules", "Desktop app (Tauri + React) and the privacy audit", "Scale benchmark, retrieval comparison and the performance fixes", "Research paper and the technical report content"]],
+      ["Om Vyas", "2305170", C.amber, ["Testing and evaluation", "Test cases and checking search quality", "Validation of results against expected answers"]],
+      ["Krushna Kadam", "2305165", C.violet, ["Documentation and presentation", "Report formatting and structure", "Slides and review of the final deliverables"]],
+    ];
+    people.forEach(([name, roll, color, items], i) => {
+      const x = 0.7 + i * 4.1;
+      glass(s, x, 1.9, 3.9, 4.8, color);
+      s.addText(name, { x: x + 0.3, y: 2.05, w: 3.4, h: 0.5, fontFace: HEAD, fontSize: 20, bold: true, color: C.text, margin: 0 });
+      s.addText(`Roll No. ${roll}`, { x: x + 0.3, y: 2.55, w: 3.4, h: 0.35, fontFace: BODY, fontSize: 13, color, margin: 0 });
+      bullets(s, items, x + 0.3, 3.1, 3.4, 3.4, 14);
+    });
+    s.addText("Guide: Dr. Minakshi R. Rajput. All three members took part in design discussions, demo rehearsal and review.", { x: 0.7, y: 6.78, w: 12, h: 0.3, fontFace: BODY, fontSize: 12, italic: true, color: C.dim, margin: 0 });
   }
 
   // 23. GLOSSARY FOR EXAMINERS ---------------------------------------------

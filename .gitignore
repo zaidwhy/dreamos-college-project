@@ -31,3 +31,4 @@ CLAUDE.md
 ~$*
 backend/data/bench/
 backend/data/*.log
+monitoring-pack/
