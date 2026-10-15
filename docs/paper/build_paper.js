@@ -25,8 +25,8 @@ const RETR = JSON.parse(fs.readFileSync(path.join(REPO, "docs", "benchmarks", "r
 const FONT = "Times New Roman";
 const T10 = 20, T9 = 18, T8 = 16; // half-points
 const LETTER = { width: 12240, height: 15840 };
-const MARGINS = { top: 1000, right: 1000, bottom: 1000, left: 1000 };
-const CONTENT_W = 12240 - 2000;
+const MARGINS = { top: 1080, right: 900, bottom: 1440, left: 900 }; // IEEE conference template: 0.75/0.625/1.0/0.625 in
+const CONTENT_W = 12240 - 1800;
 const COL_W = Math.floor((CONTENT_W - 360) / 2);
 
 const r1 = (x) => (Math.round(x * 10) / 10).toFixed(1);
@@ -37,7 +37,7 @@ const a5 = BEFORE["500"], a2 = BEFORE["2000"];
 const MID = JSON.parse(fs.readFileSync(path.join(REPO, "docs", "benchmarks", "scale_results_vectorised_only.json"), "utf8"));
 const m5k = MID["5000"];
 const x1 = (a, b) => (a / b).toFixed(1);
-const ALL = RETR.all, SH = RETR.sharing_words, NS = RETR.no_shared_words;
+const ALL = RETR.all, SH = RETR.sharing_words, NS = RETR.no_shared_words, OPEN = RETR.open_policy;
 
 // ---------------------------------------------------------------- helpers
 const run = (text, opts = {}) => new TextRun({ text, font: FONT, size: T10, ...opts });
@@ -177,7 +177,7 @@ function authorTable(authors) {
 // ---------------------------------------------------------------- title block (1 column)
 const titleBlock = [
   new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 0, after: 100 }, children: [
-    new TextRun({ text: "DreamOS: A Locally Run Semantic File Manager with a Knowledge Graph, Conversational Memory and a Checkable Privacy Audit", font: FONT, size: 40, bold: true }),
+    new TextRun({ text: "DreamOS: Trustworthy Semantic File Management with Local Models and a Checkable Privacy Audit", font: FONT, size: 40, bold: true }),
   ] }),
   ...(ANON
     ? [new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 140 }, children: [
@@ -196,24 +196,23 @@ const titleBlock = [
         new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 40, after: 10 }, children: [
           new TextRun({ text: "Department of Information Technology, Institute of Information and Communication Technology (IICT)", font: FONT, size: T9, italics: true }),
         ] }),
-        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 10 }, children: [
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 120 }, children: [
           new TextRun({ text: "MGM University, Chhatrapati Sambhajinagar, India  |  sidzaid72@gmail.com", font: FONT, size: T9, italics: true }),
         ] }),
-        new Paragraph({ spacing: { after: 100 }, children: [] }),
       ]),
 ];
 
 // ---------------------------------------------------------------- 2-column: abstract, intro, related work
 const part1 = [
-  leadIn("Abstract", `Personal file collections are organised by names chosen at save time, and those names rarely describe the content later. We present DreamOS, a locally run desktop file manager that finds, opens, relates and organises files from natural-language requests using only a local embedding model and a local 3B-parameter language model. Six modules cooperate: intent routing, semantic search, a reversible organiser, a knowledge graph, a context-memory engine and a workspace manager, and a privacy audit reports from live configuration which endpoints the system can reach. On ${RETR.queries} labelled queries over a ${RETR.files}-file vault, DreamOS ranks the intended file first for ${Math.round(ALL.dreamos.hit_at_1 * 100)}% of queries (MRR ${f2(ALL.dreamos.mrr)}), against ${Math.round(ALL.keyword.hit_at_1 * 100)}% (MRR ${f2(ALL.keyword.mrr)}) for a BM25 content index and ${Math.round(ALL.filename.hit_at_1 * 100)}% for filename matching; on the ${RETR.queries_no_shared_words} queries that share no word with their target, both lexical baselines score 0.00 and DreamOS scores ${f2(NS.dreamos.hit_at_1)}. On synthetic collections of 500 to 5,000 files, removing three all-pairs computations from graph construction cut a 2,000-file rebuild from ${r1(a2.graph_rebuild_seconds)} s to ${r1(b2.graph_rebuild_seconds)} s and a 5,000-file rebuild from ${r1(m5k.graph_rebuild_seconds)} s to ${r1(b5k.graph_rebuild_seconds)} s, after which embedding the files, not graph construction, dominates indexing time. We also document a failure in which a language model's own reference flag overrode a confident direct answer, and the rule precedence that fixed it. Limitations, including the small hand-labelled query set, are stated in full.`),
-  leadIn("Index Terms", "semantic search, sentence embeddings, knowledge graph, local language models, personal information management, conversational memory, privacy by design."),
+  leadIn("Abstract", `Personal file collections are organised by names chosen at save time, and those names rarely describe the content later. Language-model assistants can search by meaning, but they can also launch the wrong file, follow a mistaken guess, or send data off the machine without the user knowing. We present DreamOS, a locally run desktop file manager that finds, opens, relates and organises files from natural-language requests using a local embedding model and a local 3B language model, with four explicit trust mechanisms: a confidence guard on the open action, evidence-before-model precedence for follow-ups, reversible organisation and a privacy audit that can be falsified. On ${RETR.queries} labelled queries over a ${RETR.files}-file vault, DreamOS ranks the intended file first for ${Math.round(ALL.dreamos.hit_at_1 * 100)}% of queries (MRR ${f2(ALL.dreamos.mrr)}) against ${Math.round(ALL.keyword.hit_at_1 * 100)}% for a BM25 content index and ${Math.round(ALL.filename.hit_at_1 * 100)}% for filename matching; on the ${RETR.queries_no_shared_words} queries sharing no word with their target, both lexical baselines score 0.00 and DreamOS ${f2(NS.dreamos.hit_at_1)}. Opening the top result unconditionally would launch ${OPEN.always_open_top1.opened_wrong} wrong files; the guarded action launches ${OPEN.guarded_open.opened} files, all correct, at the cost of ${OPEN.guarded_open.blocked_but_top1_was_right} extra confirmations. On synthetic collections of 500 to 5,000 files, replacing three all-pairs computations cut the graph rebuild from ${r1(m5k.graph_rebuild_seconds)} s to ${r1(b5k.graph_rebuild_seconds)} s at 5,000 files. Limitations, including the small hand-labelled query set, are stated in full.`),
+  leadIn("Index Terms", "trustworthy AI, semantic search, sentence embeddings, knowledge graph, local language models, privacy by design, responsible computing."),
 
   sectionHead("I", "Introduction"),
   p("A personal computer accumulates thousands of files whose names were chosen once, in a hurry, and rarely describe what the file is about. A user who saved final_final_v3.txt must later remember that exact name, or the folder it went into, to find it again. Mainstream desktop search is lexical: a query must share vocabulary with the file name, its metadata or its text [5]-[7]. Semantic file systems [1], [8] and dense retrieval [3], [9] show that matching by meaning is feasible, but the closest recent system, LSFS [1], is designed for software agents calling an API, and neither it nor the consumer tools report in a checkable way what could leave the user's machine."),
-  p("DreamOS lets a person describe a file in plain language and have it found, opened, related to other files, or organised, with every inference step running on the user's own computer. The six modules map loosely onto the memory vocabulary of cognitive science [10]: the embedding index and knowledge graph play the role of semantic memory, the stored conversation turns and open events that of episodic memory, and the session context that of working memory. We use this only as a design analogy and make no claim of cognitive modelling. The contributions are:"),
-  p("1) An architecture that exposes semantic retrieval and action through one conversational interface for a human user, with six cooperating modules and a reversible organiser.", { indent: false }),
+  p("Generative AI makes such an assistant easy to build and easy to distrust: a language model can route a request to the wrong action, an open request can launch the wrong file, and a claim that data stays local is usually only asserted. Trustworthy and responsible AI frameworks ask for systems whose behaviour is measured, bounded and explainable [10]. DreamOS is a desktop file manager built around that requirement. A person describes a file in plain language and has it found, opened, related to other files, or organised, with every inference step running on the user's own computer, and each place where the model could cause harm is guarded by a mechanism that is tested and measured. The contributions are:"),
+  p("1) An architecture that exposes semantic retrieval and action through one conversational interface for a human user, with six cooperating modules and four explicit trust mechanisms (Table III): a confidence guard on the open action, evidence-before-model precedence, reversible moves and a checkable privacy audit.", { indent: false }),
   p("2) A controlled retrieval comparison against two lexical baselines on a labelled query set, partitioned by whether a query shares any word with its target, with confidence intervals and the failures listed.", { indent: false }),
-  p("3) A deterministic-precedence rule for conversational follow-ups, introduced after a live failure in which the language model's own flag for \"refers to previous\" overrode a confident direct search result.", { indent: false }),
+  p("3) A measurement of the guard: on the labelled queries, opening the top result unconditionally would launch two wrong files, while the guarded action launches 29 files, all correct, and blocks both, at the price of five unnecessary confirmations; and a deterministic-precedence rule for follow-ups, introduced after a live failure in which the model's own \"refers to previous\" flag overrode a confident search result.", { indent: false }),
   p("4) A vectorised, equivalence-tested knowledge-graph construction with mean-centred similarity and average-linkage clustering, evaluated at up to 5,000 files with the real local models, in which profiling-driven fixes removed all-pairs computations and brought the 5,000-file rebuild to seconds.", { indent: false }),
   p("5) A privacy audit that reports endpoints from live configuration, with an independent network-level check that can falsify it.", { indent: false, after: 80 }),
 
@@ -223,7 +222,7 @@ const part1 = [
   subHead("B. Dense retrieval, anisotropy and ranking"),
   p("Word and sentence embeddings place related text near each other [2], [3]; dense passage retrieval showed that learned embeddings can rival lexical ranking such as BM25 [9], [12]. Sentence-embedding spaces are anisotropic, so unrelated texts have high cosine similarity [13], [14]; DreamOS observes this directly (median document-pair cosine 0.52 on its vault) and counters it by mean-centring before graph construction, in the spirit of [14]. Approximate nearest-neighbour indexes such as HNSW [15] are what the vector store uses internally."),
   subHead("C. Consumer desktop search"),
-  p("Windows Search indexes names, metadata and text but matches lexically [5]; Spotlight layers metadata and ranking heuristics on a keyword index [6]; Everything indexes NTFS file names for instant lookup without reading content [7]. Table I summarises the capability gap. None of the three retrieves by meaning in the documented configuration, and none reports a checkable statement of what leaves the machine.", { after: 60 }),
+  p("Windows Search indexes names, metadata and text but matches lexically [5]; Spotlight layers ranking heuristics on a keyword index [6]; Everything indexes NTFS file names without reading content [7]. Table I summarises the gap: none retrieves by meaning in the documented configuration, and none reports a checkable statement of what leaves the machine.", { after: 60 }),
 ];
 
 // ---------------------------------------------------------------- 1-column: Table I
@@ -248,15 +247,15 @@ const tableI = [
 const part2 = [
   sectionHead("III", "System Design"),
   subHead("A. Architecture"),
-  p("DreamOS is a client-server application confined to one machine (Fig. 1). A Tauri 2 shell hosts a React interface with four views (chat, knowledge graph, workspaces, privacy). The interface calls a FastAPI service bound to 127.0.0.1:8420, which calls a local Ollama runtime for two models, nomic-embed-text [16] for embeddings and llama3.2 (3B) for intent classification, summaries and tags, and reads and writes three local stores: SQLite for relational data, ChromaDB [4] for chunk vectors and a sandboxed vault of files. No component is reachable from outside the machine by default."),
+  p("DreamOS is a client-server application confined to one machine (Fig. 1). A Tauri 2 shell hosts a React interface with four views. It calls a FastAPI service on 127.0.0.1:8420, which calls a local Ollama runtime for two models, nomic-embed-text [16] for embeddings and llama3.2 (3B) for intent, summaries and tags, and uses three local stores: SQLite for relational data, ChromaDB [4] for chunk vectors and a sandboxed vault of files."),
   subHead("B. Pipelines"),
-  p("Two pipelines share these components (Fig. 2). Indexing extracts text, chunks it, embeds each chunk, stores the vectors, asks the language model for a summary, tags and a category, and rebuilds the graph; unchanged files are skipped by content hash. The query pipeline classifies each message into one of five intents (search, open, related, workspace, organise), resolves any reference to earlier results, and routes the request to the matching module."),
+  p("Two pipelines share these components (Fig. 2). Indexing extracts text, chunks and embeds it, stores the vectors, asks the model for a summary, tags and category, and rebuilds the graph; unchanged files are skipped by content hash. The query pipeline classifies each message into one of five intents (search, open, related, workspace, organise), resolves references to earlier results, and routes the request."),
 ];
 
 const fig1 = [
-  figure("fig_architecture.png", CONTENT_W * 0.80),
+  figure("fig_architecture.png", CONTENT_W * 0.64),
   caption("Fig. 1", "DreamOS architecture. A desktop client talks over loopback HTTP to a local service with eight components (blue: request modules; green: supporting modules). The service calls a local model runtime and three local stores. Nothing in the path leaves the machine."),
-  figure("fig_pipelines.png", CONTENT_W * 0.88),
+  figure("fig_pipelines.png", CONTENT_W * 0.70),
   caption("Fig. 2", "(a) The indexing pipeline turns files into vectors, summaries, tags and graph edges. (b) The query pipeline classifies a message, resolves references (amber: the step that carries the paper's precedence rule), and routes to one of five actions."),
 ];
 
@@ -279,6 +278,23 @@ const tableII = [
     ], { firstColLeft: true }),
 ];
 
+const part3b = [
+  subHead("D. Trust mechanisms"),
+  p("A language model sits at four points where an error would cost the user something. Table III names each point, the mechanism that bounds it and the evidence reported in this paper. The mechanisms are deliberately simple and deterministic, so each can be tested on its own and explained to a user: none relies on the model grading itself."),
+];
+
+const tableTrust = [
+  tableCaption("III", "Trust Mechanisms, the Failure Each Prevents and the Evidence"),
+  table([2000, 2900, 2800, 2740],
+    ["Mechanism", "Failure it prevents", "How it works", "Evidence"],
+    [
+      ["Confidence guard on open", "Launching a wrong file on a weak or ambiguous match", "Opens only at similarity 0.55 or above with no runner-up within 0.05; otherwise shows candidates", `Sec. VI-B: ${OPEN.guarded_open.opened} opens, ${OPEN.guarded_open.opened_wrong} wrong, against ${OPEN.always_open_top1.opened_wrong} wrong without it`],
+      ["Evidence before model", "A stale or guessed reference overriding a clear request", "Ordinal and pronoun rules, then a direct search; the model's flag is the last resort", "Live failure; regression test fails on the old order (Sec. IV-C)"],
+      ["Reversible organisation", "Irrecoverable moves of files", "Move only on confirmation; original path stored; revert restores it", "Apply-and-revert test; ids survive moves (Sec. III-C)"],
+      ["Checkable privacy audit", "An unverified claim that data stays local", "Lists every endpoint from live configuration; names a netstat check that can falsify it", "Sec. IV-D; every endpoint is loopback"],
+    ], { firstColLeft: true }),
+];
+
 const part4 = [
   sectionHead("IV", "Methods"),
   subHead("A. Semantic search"),
@@ -288,34 +304,34 @@ const part4 = [
   p("with floor τ = 0.47, margin δ = 0.06 below the best score s*, and λ = 0.08. A fixed cut-off was abandoned because it dropped correct answers to short queries (20 of 27 on the tuning set, against 27 of 27 with the relative rule). Results below a confidence bar of 0.55 are labelled low-confidence, and the open action never launches a file from such a result.", { indent: false }),
   subHead("B. Knowledge graph"),
   p("Three typed, weighted edge kinds connect files: similar (cosine of mean chunk embeddings), references (one file's text names another by file name) and shared_tag (at least two AI-generated tags in common). Raw cosine is compressed by anisotropy, so vectors are first mean-centred, ĥ_f = (h_f − μ) / ‖h_f − μ‖, which spreads unrelated pairs to about 0 and related pairs to 0.25-0.4; the similar-edge threshold is 0.25 on that scale and each file keeps its three strongest neighbours. Clusters use average-linkage merging, joining two groups only while the mean edge weight between their members, counting missing edges as 0, exceeds 0.12. Plain connected components chained unrelated groups through single weak bridges (a 7-file cluster mixing resumes with proposals); average linkage cannot chain."),
-  p("The pairwise Python loop was replaced by one matrix product, S = ĤĤ^T, with neighbours chosen by partial sort. An equivalence test on random vectors confirms identical edges, so the rewrite changes speed and not behaviour. An inverted index for shared tags removed another quadratic term. Profiling the 5,000-file rebuild then showed the reference check, an all-pairs regular-expression search, taking 98% of the time; each file name is now filed under its rarest alphanumeric token and a text is searched only for the names whose token it contains, which cannot miss a bounded occurrence and is checked against the exhaustive search in a test. Clustering uses a heap over per-group adjacency instead of rescanning every link after each merge; on random graphs without ties it matches the original loop exactly, and with ties it breaks them by lowest group id."),
+  p("The pairwise similarity loop was replaced by one matrix product, S = ĤĤ^T, and two further all-pairs steps by a token index (the reference check, which was 98% of the 5,000-file rebuild) and a heap over per-group adjacency (the clustering). Each was checked against its original definition on random data; ties in clustering are broken by lowest group id (Sec. VI-C)."),
   subHead("C. Context memory and deterministic precedence"),
-  p("Each turn is stored with the identifiers of the files it showed, so follow-ups such as \"open the second one\" or \"open it\" resolve after a restart or a file move. Fig. 3 gives the resolution order: ordinal and bare-pronoun rules first, then a direct search on the topic the classifier extracted, and only if that search is below the confidence bar does the model's own \"refers to previous\" flag act as a last resort."),
+  p("Each turn is stored with the identifiers of the files it showed, so follow-ups such as \"open the second one\" resolve after a restart or a file move. Fig. 3 gives the order: ordinal and bare-pronoun rules, then a direct search on the topic the classifier extracted, and only if that search is below the confidence bar the model's own \"refers to previous\" flag as a last resort."),
 ];
 
 const fig3 = [
-  figure("fig_followup.png", COL_W * 0.92),
+  figure("fig_followup.png", COL_W * 0.68),
   caption("Fig. 3", "Follow-up resolution flowchart. Amber: decisions, evaluated top to bottom; green: outcomes. Deterministic evidence precedes the language model's own judgement."),
 ];
 
 const part5 = [
   p("The order was fixed after a live rehearsal. Asked \"what is related to my resume\" after a search for invoices, the system answered about an invoice file. The 3B model set its continuation flag to true for this sentence while correctly extracting \"resume\" as the topic, apparently because the sentence matched an example in its own instructions; the system had trusted the flag unconditionally. A regression test that fails on the old precedence and passes on the new guards it.", { indent: false }),
   subHead("D. Privacy audit"),
-  p("An endpoint reads live configuration and lists every address the service is set to call, whether each is loopback, and what is stored locally. It states that it checks configuration, not traffic, and names the independent check (listing listening sockets with netstat to confirm loopback-only binding), so the claim can be falsified."),
+  p("An endpoint reads live configuration and lists every address the service is set to call, whether each is loopback, and what is stored locally. It states that it checks configuration, not traffic, and names the independent check (listing listening sockets with netstat), so the claim can be falsified."),
   subHead("E. Organiser and workspaces"),
-  p("For each file the model proposes a summary, tags, a category and a reason; a move is applied only on confirmation and is reversible. Workspace recommendations (related groups, frequently opened files, duplicates, uncategorised and stale files) are rule-based on purpose, so they are reproducible and explainable and cost no extra model calls."),
+  p("For each file the model proposes a summary, tags, a category and a reason; a move is applied only on confirmation and is reversible. Workspace recommendations are rule-based on purpose, so they are reproducible, explainable and cost no model calls."),
 
   sectionHead("V", "Experimental Setup"),
-  p("All runs used one laptop (AMD Ryzen 7 6800H, 16 GB RAM, Windows 11, CPU only) with nomic-embed-text and llama3.2 3B served by Ollama. The suite of 123 automated tests runs offline against fixtures and on every push in continuous integration."),
+  p("All runs used one laptop (AMD Ryzen 7 6800H, 16 GB RAM, Windows 11, CPU only) with nomic-embed-text and llama3.2 3B on Ollama. The 123 automated tests run offline against fixtures and on every push in continuous integration."),
   subHead("A. Retrieval comparison"),
   p(`The corpus is the ${RETR.files}-file demonstration vault: deliberately messy text, Markdown and source files (CVs, invoices, meeting notes, a recipe, scripts). We wrote ${RETR.queries} queries with their relevant files before running any system. Each query is partitioned automatically by whether any of its content words, after the system's own stop-word and plural folding, occurs in a relevant file's name or text: ${RETR.queries_sharing_words} do, ${RETR.queries_no_shared_words} do not. Four systems return at most ${RETR.k} files: (i) filename match, a lexical match on names only, standing in for name-index tools [7]; (ii) BM25 [12] over name and text, standing in for lexical content indexes [5], [6]; (iii) embedding only, DreamOS without the keyword boost and cut-off; (iv) DreamOS as shipped. Metrics are Hit@1, Hit@3 and mean reciprocal rank (MRR), with 95% Wilson intervals [17] on Hit@1, following standard information-retrieval evaluation practice [18].`),
   subHead("B. Scale evaluation"),
-  p("Synthetic vaults of 500, 2,000 and 5,000 text files across twelve topics were generated, about half with one distractor sentence from another topic. Each size ran in a fresh process with a fresh database and the real models. We measured indexing throughput (including the graph rebuild that follows an index pass), graph rebuild time, the latency of 36 queries, and precision at 5 against the generated topic label. The scripts (bench_scale.py, eval_retrieval.py) are part of the project repository."),
+  p("Synthetic vaults of 500, 2,000 and 5,000 text files across twelve topics (half with one distractor sentence from another topic) were each run in a fresh process with a fresh database and the real models, measuring indexing throughput, graph rebuild time, the latency of 36 queries and precision at 5 against the generated topic label. The scripts (bench_scale.py, eval_retrieval.py) are in the project repository."),
 ];
 
 // ---------------------------------------------------------------- 1-column: Table III + Fig 5 etc.
 const tableIII = [
-  tableCaption("III", `Retrieval Comparison on ${RETR.queries} Labelled Queries (${RETR.files} Files)`),
+  tableCaption("IV", `Retrieval Comparison on ${RETR.queries} Labelled Queries (${RETR.files} Files)`),
   table([2500, 1100, 1100, 1100, 1450, 1450, 1380],
     ["System", "Hit@1 (all)", "Hit@3 (all)", "MRR (all)", `Hit@1, shares words (n=${RETR.queries_sharing_words})`, `Hit@1, no shared words (n=${RETR.queries_no_shared_words})`, `MRR, no shared words`],
     [
@@ -329,22 +345,26 @@ const tableIII = [
 const part6 = [
   sectionHead("VI", "Results"),
   subHead("A. Retrieval quality"),
-  p(`Table III and Fig. 4 show the comparison. DreamOS places a relevant file first for ${Math.round(ALL.dreamos.hit_at_1 * 100)}% of all queries and within the first three for ${Math.round(ALL.dreamos.hit_at_3 * 100)}%, against ${Math.round(ALL.keyword.hit_at_1 * 100)}% and ${Math.round(ALL.keyword.hit_at_3 * 100)}% for BM25. The partition explains the gap: when a query shares a word with its target, BM25 reaches Hit@1 ${f2(SH.keyword.hit_at_1)} and DreamOS ${f2(SH.dreamos.hit_at_1)}; when it shares none, both lexical baselines score exactly 0.00 by construction, while DreamOS scores ${f2(NS.dreamos.hit_at_1)} with all ${RETR.queries_no_shared_words} targets inside the top three. Examples are \"present for my mother\" finding the gift list that says \"Mom's birthday\", and \"how to brew a hot drink with spices\" finding the chai recipe.`),
+  p(`Table IV and Fig. 4 show the comparison. DreamOS places a relevant file first for ${Math.round(ALL.dreamos.hit_at_1 * 100)}% of all queries and within the first three for ${Math.round(ALL.dreamos.hit_at_3 * 100)}%, against ${Math.round(ALL.keyword.hit_at_1 * 100)}% and ${Math.round(ALL.keyword.hit_at_3 * 100)}% for BM25. The partition explains the gap: when a query shares a word with its target, BM25 reaches Hit@1 ${f2(SH.keyword.hit_at_1)} and DreamOS ${f2(SH.dreamos.hit_at_1)}; when it shares none, both lexical baselines score exactly 0.00 by construction, while DreamOS scores ${f2(NS.dreamos.hit_at_1)} with all ${RETR.queries_no_shared_words} targets inside the top three. Examples are \"present for my mother\" finding the gift list that says \"Mom's birthday\", and \"how to brew a hot drink with spices\" finding the chai recipe.`),
 ];
 
 const fig4 = [
-  figure("fig_retrieval.png", COL_W * 0.96),
+  figure("fig_retrieval.png", COL_W * 0.88),
   caption("Fig. 4", "Hit@1 by system and query group, with 95% Wilson intervals. Lexical systems cannot answer queries that share no word with the target; the embedding-based systems can."),
 ];
 
+const GUARD_TEXT = `The open action is the one place where a retrieval error becomes an action on the user's computer, so we measured the confidence guard on the same ${RETR.queries} queries. Following the rule in Table III, a file is launched only when its similarity is at least ${OPEN.threshold} and no runner-up lies within ${OPEN.ambiguity_margin}. Opening the top result unconditionally would launch ${OPEN.always_open_top1.opened} files, ${OPEN.always_open_top1.opened_wrong} of them wrong. The guard launches ${OPEN.guarded_open.opened} files, all ${OPEN.guarded_open.opened_correct} correct, and holds back ${OPEN.guarded_open.abstained + OPEN.guarded_open.ambiguous} queries (${OPEN.guarded_open.abstained} below the bar, ${OPEN.guarded_open.ambiguous} with a close runner-up), showing candidates instead. Of the held-back queries, ${OPEN.guarded_open.blocked_but_top1_was_right} would have opened the right file, so the price of the guard is ${OPEN.guarded_open.blocked_but_top1_was_right} extra confirmations and the benefit is that both wrong opens are prevented. Two caveats apply: the bar of ${OPEN.threshold} was tuned earlier on this vault, so this is a measurement of the policy, not a held-out estimate; and the real application also resolves some close calls by the file the user opens most, which this offline evaluation does not model.`;
+
 const part7 = [
   p(`Two findings are less favourable and are reported as measured. First, the keyword boost helps queries that share words (Hit@1 ${f2(SH.embedding.hit_at_1)} to ${f2(SH.dreamos.hit_at_1)}) but costs one of the ${RETR.queries_no_shared_words} paraphrase queries (${f2(NS.embedding.hit_at_1)} to ${f2(NS.dreamos.hit_at_1)}); the intervals overlap, so the data cannot separate the two configurations. Second, DreamOS missed rank 1 on two queries (\"remarks from our mentor about what to improve\" and \"spending breakdown for the semester\"), both of which placed an unrelated quotes file first with the correct file second. With ${RETR.queries} queries the Hit@1 interval for DreamOS is wide (about 0.82 to 0.99), so differences of a few points between the embedding systems should not be over-read.`, { indent: false }),
-  subHead("B. Scale"),
-  p(`Table IV and Fig. 5 report the scale runs. Indexing stays above ${r1(b5k.index_files_per_second)} files per second up to 5,000 files and median search latency grows from ${r1(b5.search_p50_ms)} ms to ${r1(b5k.search_p50_ms)} ms. Graph construction was sped up in two stages. Vectorising the similarity step cut the 500-file rebuild from ${r1(a5.graph_rebuild_seconds)} s to ${r1(m5k ? MID["500"].graph_rebuild_seconds : 0)} s and the 2,000-file rebuild from ${r1(a2.graph_rebuild_seconds)} s to ${r1(MID["2000"].graph_rebuild_seconds)} s, but profiling the 5,000-file rebuild (${r1(m5k.graph_rebuild_seconds)} s) showed that 98% of it was the reference check, an all-pairs regular-expression search. Replacing that with a token index, and the clustering with a heap over per-group adjacency, brought the rebuilds to ${r1(b5.graph_rebuild_seconds)} s, ${r1(b2.graph_rebuild_seconds)} s and ${r1(b5k.graph_rebuild_seconds)} s at 500, 2,000 and 5,000 files, with the same edge set. Indexing is now dominated by embedding: at 5,000 files the graph is ${(100 * b5k.graph_rebuild_seconds / b5k.index_seconds).toFixed(0)}% of the ${r1(b5k.index_seconds)} s index pass. Precision at 5 is 1.00 at every size, which shows only that the twelve synthetic topics separate; it is not a quality claim for real documents.`),
+  subHead("B. Guarded actions"),
+  p(GUARD_TEXT),
+  subHead("C. Scale"),
+  p(`Table V and Fig. 5 report the scale runs. Indexing stays above ${r1(b5k.index_files_per_second)} files per second up to 5,000 files and median search latency grows from ${r1(b5.search_p50_ms)} ms to ${r1(b5k.search_p50_ms)} ms. Graph construction was sped up in two stages. Vectorising the similarity step cut the 500-file rebuild from ${r1(a5.graph_rebuild_seconds)} s to ${r1(m5k ? MID["500"].graph_rebuild_seconds : 0)} s and the 2,000-file rebuild from ${r1(a2.graph_rebuild_seconds)} s to ${r1(MID["2000"].graph_rebuild_seconds)} s, but profiling the 5,000-file rebuild (${r1(m5k.graph_rebuild_seconds)} s) showed that 98% of it was the reference check, an all-pairs regular-expression search. Replacing that with a token index, and the clustering with a heap over per-group adjacency, brought the rebuilds to ${r1(b5.graph_rebuild_seconds)} s, ${r1(b2.graph_rebuild_seconds)} s and ${r1(b5k.graph_rebuild_seconds)} s at 500, 2,000 and 5,000 files, with the same edge set. Indexing is now dominated by embedding: at 5,000 files the graph is ${(100 * b5k.graph_rebuild_seconds / b5k.index_seconds).toFixed(0)}% of the ${r1(b5k.index_seconds)} s index pass. Precision at 5 is 1.00 at every size, which shows only that the twelve synthetic topics separate; it is not a quality claim for real documents.`),
 ];
 
 const tableIV = [
-  tableCaption("IV", "Scale Benchmark Across the Three Graph-Construction Stages (n/m: not measured)"),
+  tableCaption("V", "Scale Benchmark Across the Three Graph-Construction Stages (n/m: not measured)"),
   table([1100, 1900, 1900, 1900, 1280, 1280, 1520],
     ["Files", "Index files/s (first / final)", "Graph rebuild s (loop / vectorised / final)", "Graph edges", "Search p50 (ms)", "Search p95 (ms)", "Precision@5"],
     [
@@ -355,12 +375,12 @@ const tableIV = [
 ];
 
 const fig5 = [
-  figure("fig_scale.png", CONTENT_W * 0.96),
-  caption("Fig. 5", "Scale results from the same runs as Table IV. (a) Graph rebuild time on a log scale at three stages: the original pairwise loop, vectorised similarity only, and the final version (token-indexed reference check, heap clustering). (b) Indexing throughput, which includes the graph rebuild. (c) Median and 95th-percentile search latency, which grows with the number of stored vectors."),
+  figure("fig_scale.png", CONTENT_W * 0.84),
+  caption("Fig. 5", "Scale results from the same runs as Table V. (a) Graph rebuild time on a log scale at three stages: the original pairwise loop, vectorised similarity only, and the final version (token-indexed reference check, heap clustering). (b) Indexing throughput, which includes the graph rebuild. (c) Median and 95th-percentile search latency, which grows with the number of stored vectors."),
 ];
 
 const tableV = [
-  tableCaption("V", "Defects Exposed by Testing, Their Causes and Fixes"),
+  tableCaption("VI", "Defects Exposed by Testing, Their Causes and Fixes"),
   table([2000, 2700, 2900, 2480],
     ["Defect", "Symptom", "Cause", "Fix and evidence"],
     [
@@ -371,31 +391,35 @@ const tableV = [
 ];
 
 const part8 = [
-  subHead("C. Defects found by testing"),
-  p("Table V lists the three defects that testing exposed. Each was diagnosed by measurement rather than assumption: the first by profiling, which located the time inside the socket connect call rather than in inference; the second by scaling the input and observing super-linear growth; the third by a live rehearsal that the unit tests had not anticipated. Each fix has a test that fails against the prior code."),
-  subHead("D. Intent routing"),
-  p("The intent prompt was evaluated rather than guessed: a 32-message tuning set and a separate 26-message held-out set were run on the real llama3.2. The first prompt scored 80% on the held-out set and the revised prompt 88% (23 of 26). The remaining misses are borderline phrasings, for example \"which files should I archive\" routed to organise rather than workspace. Every module sits behind this classifier, so this error rate bounds how often a request is routed to the wrong module."),
-  subHead("E. Interface"),
-  p("Fig. 6 shows three of the four views. The chat view returns result cards, each with an action and, for related-file answers, the reason the files are linked (similar content, a direct reference or shared tags). The graph view lays out files and edges by force-directed layout; the workspace view lists recommendations with the rule that produced each, and creates workspaces that open together."),
+  subHead("D. Defects found by testing"),
+  p("Table VI lists the three defects that testing exposed. Each was found by measurement: the first by profiling, the second by scaling the input and observing super-linear growth, the third by a live rehearsal the unit tests had not anticipated. Each fix has a test that fails against the prior code."),
+  subHead("E. Intent routing"),
+  p("The intent prompt was evaluated, not guessed: a 32-message tuning set and a separate 26-message held-out set on the real llama3.2 gave 80% held-out accuracy with the first prompt and 88% (23 of 26) with the revised one. The misses are borderline phrasings, for example \"which files should I archive\" routed to organise rather than workspace; every module sits behind this classifier, so the 12% bounds how often a request reaches the wrong module."),
+  subHead("F. Interface"),
+  p("Fig. 6 shows three of the four views. Result cards carry an action and, for related files, the reason they are linked; the graph view is a force-directed layout of files and edges; the workspace view lists each recommendation with the rule that produced it."),
 ];
 
 const fig6 = [
-  figure("fig_ui.png", CONTENT_W * 0.92),
+  figure("fig_ui.png", CONTENT_W * 0.72),
   caption("Fig. 6", "Screenshots of the desktop client: (a) chat results with the reason each related file is linked, (b) the knowledge-graph view, (c) workspaces with rule-based suggestions."),
 ];
 
 const part9 = [
   sectionHead("VII", "Discussion and Threats to Validity"),
-  p("Meaning-based matching is what separates the systems, and it comes from the embedding model, not from the surrounding engineering; what DreamOS adds is a single interface over retrieval, action and memory, evidence-ordered resolution of follow-ups, and a privacy statement that can be falsified. The negative results matter as much: the keyword boost trades a paraphrase query for several shared-word ones, and the dense pairwise-similarity matrix still grows with the square of the number of files (about 200 MB at 5,000 files), which is the next limit rather than the graph rebuild time; beyond roughly ten thousand files it would be replaced by an approximate index such as FAISS [19] or HNSW [15]. Public benchmarks such as MTEB [20] rank embedding models on standard tasks, but they do not measure a file manager’s conversational behaviour or its failure modes, which is why we ran a task-specific comparison."),
-  p("Threats to validity. Internal: the authors wrote and labelled the queries, which risks unconscious favouring of the system; labels were fixed before the run, the partition is computed rather than judged, and failures are listed. Baselines are reference implementations of the lexical class (name match, BM25 with the system's own tokeniser), not the Windows Search, Spotlight or Everything products, so Table III supports a claim about lexical versus embedding retrieval, not about any named product. Construct: precision on synthetic topic labels measures topic separation, not usefulness. External: 37 files and 36 queries, one author's vault, one machine, one pair of small models; intent classification is 88% correct (23 of 26) on held-out phrasings and borderline phrasing is misrouted. Reproducibility: all numbers in this paper are read from committed result files produced by the two scripts above."),
+  p("Meaning-based matching comes from the embedding model, not from the surrounding engineering; what DreamOS adds is one interface over retrieval, action and memory, and four trust mechanisms that are small enough to test and explain. Human-AI interaction guidelines [20] ask a system to make clear what it can do and how well, and to support efficient correction; the confidence labels, the guarded open action and the reversible moves implement those requirements in a way that can be measured (Tables III and IV, Section VI-B). The negative results matter as much: the keyword boost trades one paraphrase query for several shared-word ones, and the dense similarity matrix grows with the square of the file count (about 200 MB at 5,000 files), so beyond roughly ten thousand files an approximate index such as FAISS [19] or HNSW [15] would replace it."),
+  p("Threats to validity. Internal: the authors wrote and labelled the queries; labels were fixed before the run, the partition is computed rather than judged, and failures are listed. The baselines are reference implementations of the lexical class, not the Windows Search, Spotlight or Everything products, so Table IV supports a claim about lexical versus embedding retrieval, not about any named product. Construct: precision on synthetic topic labels measures topic separation, not usefulness. External: 37 files, 36 queries, one vault, one machine, one pair of small models; intent routing is 88% correct on held-out phrasings. All numbers in this paper are read from committed result files produced by the two scripts above."),
 
   sectionHead("VIII", "Conclusion"),
-  p("DreamOS shows that a single laptop with two small local models can support meaning-based file retrieval, conversational follow-ups and a relationship graph, with a privacy claim that can be checked. In a controlled comparison it retrieved paraphrased targets that lexical indexes cannot, at the cost of a small, reported regression on one query; measurement exposed performance defects (a name-resolution delay and three all-pairs computations in graph construction) and one behavioural defect, each fixed and tested. Future work is a labelled evaluation on consented real documents, an approximate nearest-neighbour graph for collections beyond 10,000 files, and a head-to-head run against the shipped desktop-search products.", { after: 60 }),
+  p("DreamOS shows that a single laptop with two small local models can support meaning-based file retrieval, conversational follow-ups and a relationship graph, while keeping the model's mistakes from becoming harmful actions and the privacy claim checkable. It retrieved paraphrased targets that lexical indexes cannot, its guarded open action launched no wrong file on the labelled queries, and measurement exposed a name-resolution delay, three all-pairs computations and one behavioural defect, each fixed and tested. Future work is a labelled evaluation on consented real documents, an approximate nearest-neighbour graph beyond 10,000 files, and a head-to-head run against the shipped desktop-search products.", { after: 60 }),
 ];
 
-const ack = ANON ? [] : [
+const AI_SENTENCE = "Generative AI (Claude, Anthropic) assisted with drafting text and with figure and analysis code; the authors checked all content and results and are responsible for them.";
+const ack = ANON ? (process.env.AI_DISCLOSURE === "1" ? [
   new Paragraph({ spacing: { before: 60, after: 40 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "ACKNOWLEDGMENT", font: FONT, size: T10, bold: true })] }),
-  p("The authors thank their project guide, Dr. Minakshi R. Rajput, and the Institute of Information and Communication Technology, MGM University, for the Project Monitoring structure under which this work was reviewed.", { after: 60 }),
+  p(AI_SENTENCE, { after: 60 }),
+] : []) : [
+  new Paragraph({ spacing: { before: 60, after: 40 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "ACKNOWLEDGMENT", font: FONT, size: T10, bold: true })] }),
+  p("The authors thank their project guide, Dr. Minakshi R. Rajput, and IICT, MGM University, for the Project Monitoring structure under which this work was reviewed." + (process.env.AI_DISCLOSURE === "1" ? " " + AI_SENTENCE : ""), { after: 60 }),
 ];
 
 const refs = [
@@ -409,7 +433,7 @@ const refs = [
   refEntry(7, "voidtools, “Everything: locate files and folders by name instantly,” voidtools.com."),
   refEntry(8, "D. K. Gifford, P. Jouvelot, M. A. Sheldon and J. W. O'Toole, “Semantic file systems,” in Proc. 13th ACM Symp. on Operating Systems Principles (SOSP), 1991."),
   refEntry(9, "V. Karpukhin et al., “Dense Passage Retrieval for Open-Domain Question Answering,” in Proc. EMNLP, 2020."),
-  refEntry(10, "E. Tulving, “Episodic and semantic memory,” in Organization of Memory, E. Tulving and W. Donaldson, Eds. Academic Press, 1972."),
+  refEntry(10, "National Institute of Standards and Technology, \u201CArtificial Intelligence Risk Management Framework (AI RMF 1.0),\u201D NIST AI 100-1, Gaithersburg, MD, USA, 2023."),
   refEntry(11, "S. Dumais, E. Cutrell, J. J. Cadiz, G. Jancke, R. Sarin and D. C. Robbins, “Stuff I've Seen: A System for Personal Information Retrieval and Re-Use,” in Proc. ACM SIGIR, 2003."),
   refEntry(12, "S. Robertson and H. Zaragoza, “The Probabilistic Relevance Framework: BM25 and Beyond,” Found. Trends Inf. Retr., vol. 3, no. 4, 2009."),
   refEntry(13, "K. Ethayarajh, “How Contextual are Contextualized Word Representations? Comparing the Geometry of BERT, ELMo, and GPT-2 Embeddings,” in Proc. EMNLP-IJCNLP, 2019."),
@@ -419,7 +443,7 @@ const refs = [
   refEntry(17, "E. B. Wilson, “Probable inference, the law of succession, and statistical inference,” J. Amer. Statist. Assoc., vol. 22, no. 158, 1927."),
   refEntry(18, "C. D. Manning, P. Raghavan and H. Schütze, Introduction to Information Retrieval. Cambridge, U.K.: Cambridge University Press, 2008."),
   refEntry(19, "J. Johnson, M. Douze and H. Jégou, “Billion-scale similarity search with GPUs,” IEEE Trans. Big Data, vol. 7, no. 3, 2021."),
-  refEntry(20, "N. Muennighoff, N. Tazi, L. Magne and N. Reimers, “MTEB: Massive Text Embedding Benchmark,” in Proc. Conf. of the European Chapter of the Association for Computational Linguistics (EACL), 2023."),
+  refEntry(20, "S. Amershi et al., \u201CGuidelines for Human-AI Interaction,\u201D in Proc. ACM CHI Conf. on Human Factors in Computing Systems, 2019."),
 ];
 
 // ---------------------------------------------------------------- document
@@ -430,7 +454,7 @@ const two = (children) => ({ properties: { page: pageProps, type: SectionType.CO
 
 const doc = new Document({
   creator: ANON ? "Anonymous" : "Zaid Ali Syed, Om Vyas, Krushna Kadam",
-  title: "DreamOS: A Locally Run Semantic File Manager with a Knowledge Graph, Conversational Memory and a Checkable Privacy Audit",
+  title: "DreamOS: Trustworthy Semantic File Management with Local Models and a Checkable Privacy Audit",
   styles: { default: { document: { run: { font: FONT, size: T10 } } } },
   sections: [
     one(titleBlock),
@@ -440,6 +464,8 @@ const doc = new Document({
     one(fig1),
     two([...part3]),
     one(tableII),
+    two(part3b),
+    one(tableTrust),
     two([...part4, ...fig3, ...part5]),
     one(tableIII),
     two([...part6, ...fig4, ...part7]),
@@ -452,5 +478,6 @@ const doc = new Document({
   ],
 });
 
-const out = path.join(__dirname, ANON ? "DreamOS-IEEE-Paper-Anonymous.docx" : "DreamOS-IEEE-Paper.docx");
+const DISC = process.env.AI_DISCLOSURE === "1" ? "-AI-disclosed" : "";
+const out = path.join(__dirname, ANON ? `DreamOS-IEEE-Paper-Anonymous${DISC}.docx` : `DreamOS-IEEE-Paper${DISC}.docx`);
 Packer.toBuffer(doc).then((buf) => { fs.writeFileSync(out, buf); console.log("wrote", out, buf.length, "bytes"); });

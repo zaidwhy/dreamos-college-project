@@ -177,7 +177,8 @@ def main() -> None:
             best[md["path"]] = max(best.get(md["path"], -1), sim)
         em_names = [p for p, _ in sorted(best.items(), key=lambda x: -x[1])]
         # shipped pipeline
-        dr_names = [h.path for h in search.semantic_search(query, top_k=K)]
+        dr_hits = search.semantic_search(query, top_k=K)
+        dr_names = [h.path for h in dr_hits]
 
         ranks = {
             "filename": first_rank(fn_names, relevant),
@@ -187,14 +188,41 @@ def main() -> None:
         }
         for k, v in ranks.items():
             systems[k].append(v)
+        # What the `open` action would do with this query: launch only above the confidence bar and
+        # only when no close runner-up exists (same rule as app.nl_interface._open, before the
+        # most-used tie-breaker, which needs usage history this evaluation does not have).
+        top = dr_hits[0] if dr_hits else None
+        if top is None or top.similarity < settings.search_similarity_threshold:
+            decision = "abstain"
+        else:
+            tied = [h for h in dr_hits[:3] if top.similarity - h.similarity < settings.open_ambiguity_margin]
+            decision = "ambiguous" if len(tied) > 1 else "open"
         per_query.append({"query": query, "relevant": sorted(relevant), "shares_words": shares,
-                          "ranks": ranks, "dreamos_top1": dr_names[0] if dr_names else None})
+                          "ranks": ranks, "dreamos_top1": dr_names[0] if dr_names else None,
+                          "top_similarity": top.similarity if top else None,
+                          "open_decision": decision,
+                          "top1_correct": bool(top and top.path in relevant)})
 
     def subset(flag):
         idx = [i for i, s in enumerate(shared_flags) if s == flag]
         return {k: metrics([v[i] for i in idx]) for k, v in systems.items()}, len(idx)
 
     all_m = {k: metrics(v) for k, v in systems.items()}
+    guarded = {"opened": 0, "opened_correct": 0, "abstained": 0, "ambiguous": 0,
+               "blocked_but_top1_was_right": 0, "blocked_and_top1_was_wrong": 0}
+    for q in per_query:
+        d = q["open_decision"]
+        if d == "open":
+            guarded["opened"] += 1
+            guarded["opened_correct"] += int(q["top1_correct"])
+        else:
+            guarded["abstained" if d == "abstain" else "ambiguous"] += 1
+            guarded["blocked_but_top1_was_right" if q["top1_correct"] else "blocked_and_top1_was_wrong"] += 1
+    always = {"opened": len(per_query), "opened_correct": sum(int(q["top1_correct"]) for q in per_query)}
+    always["opened_wrong"] = always["opened"] - always["opened_correct"]
+    guarded["opened_wrong"] = guarded["opened"] - guarded["opened_correct"]
+    open_policy = {"always_open_top1": always, "guarded_open": guarded,
+                   "threshold": settings.search_similarity_threshold, "ambiguity_margin": settings.open_ambiguity_margin}
     shared_m, n_shared = subset(True)
     none_m, n_none = subset(False)
     out = {
@@ -206,6 +234,7 @@ def main() -> None:
         "all": all_m,
         "sharing_words": shared_m,
         "no_shared_words": none_m,
+        "open_policy": open_policy,
         "per_query": per_query,
     }
     dest = REPO / "docs" / "benchmarks" / "retrieval_comparison.json"
@@ -221,6 +250,7 @@ def main() -> None:
         for k in ("filename", "keyword", "embedding", "dreamos"):
             print(row(k, block[k]))
     print(f"queries {len(QUERIES)}  sharing {n_shared}  none {n_none}")
+    print("open policy:", json.dumps(open_policy))
 
 
 if __name__ == "__main__":

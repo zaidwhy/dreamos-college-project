@@ -94,6 +94,24 @@
       "mrr": 0.9
     }
   },
+  "open_policy": {
+    "always_open_top1": {
+      "opened": 36,
+      "opened_correct": 34,
+      "opened_wrong": 2
+    },
+    "guarded_open": {
+      "opened": 29,
+      "opened_correct": 29,
+      "abstained": 2,
+      "ambiguous": 5,
+      "blocked_but_top1_was_right": 5,
+      "blocked_and_top1_was_wrong": 2,
+      "opened_wrong": 0
+    },
+    "threshold": 0.55,
+    "ambiguity_margin": 0.05
+  },
   "per_query": [
     {
       "query": "invoice BlueRidge hosting",
@@ -107,7 +125,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "inv_003.txt"
+      "dreamos_top1": "inv_003.txt",
+      "top_similarity": 0.8719,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "Ajanta Ellora caves trip",
@@ -121,7 +142,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "travel_plan.txt"
+      "dreamos_top1": "travel_plan.txt",
+      "top_similarity": 0.8401,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "chai recipe ginger cardamom",
@@ -135,7 +159,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "recipe.txt"
+      "dreamos_top1": "recipe.txt",
+      "top_similarity": 0.9032,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "workout log badminton",
@@ -149,7 +176,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "workout_log.txt"
+      "dreamos_top1": "workout_log.txt",
+      "top_similarity": 0.7856,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "quicksort implementation",
@@ -163,7 +193,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "script1.py"
+      "dreamos_top1": "script1.py",
+      "top_similarity": 0.8012,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "Flask library book search",
@@ -177,7 +210,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "old_flask_app.py"
+      "dreamos_top1": "old_flask_app.py",
+      "top_similarity": 0.787,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "OWASP LLM Top 10",
@@ -192,7 +228,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "misc_notes_v2.txt"
+      "dreamos_top1": "misc_notes_v2.txt",
+      "top_similarity": 0.6523,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "list of the core modules to build first",
@@ -206,7 +245,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "module_list.txt"
+      "dreamos_top1": "module_list.txt",
+      "top_similarity": 0.8283,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "canteen receipt lunch",
@@ -220,7 +262,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "scan0007.txt"
+      "dreamos_top1": "scan0007.txt",
+      "top_similarity": 0.835,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "knowledge graph design meeting",
@@ -234,7 +279,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "mtg_04_12.txt"
+      "dreamos_top1": "mtg_04_12.txt",
+      "top_similarity": 0.7549,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "sandboxed demo vault decision",
@@ -249,7 +297,10 @@
         "embedding": 2,
         "dreamos": 1
       },
-      "dreamos_top1": "notes.txt"
+      "dreamos_top1": "notes.txt",
+      "top_similarity": 0.7468,
+      "open_decision": "ambiguous",
+      "top1_correct": true
     },
     {
       "query": "Kent Beck quote",
@@ -263,7 +314,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "quotes.txt"
+      "dreamos_top1": "quotes.txt",
+      "top_similarity": 0.704,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "SQL marks query lab",
@@ -277,7 +331,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "sql_practice.txt"
+      "dreamos_top1": "sql_practice.txt",
+      "top_similarity": 0.8291,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "billing March domain renewal",
@@ -291,7 +348,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "billing_march.txt"
+      "dreamos_top1": "billing_march.txt",
+      "top_similarity": 0.8419,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "debounce helper function",
@@ -305,7 +365,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "helper.js"
+      "dreamos_top1": "helper.js",
+      "top_similarity": 0.7564,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "who attended the team sync",
@@ -319,7 +382,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "notes.txt"
+      "dreamos_top1": "notes.txt",
+      "top_similarity": 0.6765,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "daily standup embedding progress",
@@ -333,7 +399,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "standup.txt"
+      "dreamos_top1": "standup.txt",
+      "top_similarity": 0.677,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "early version of the specification",
@@ -347,7 +416,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "spec_v1.txt"
+      "dreamos_top1": "spec_v1.txt",
+      "top_similarity": 0.5942,
+      "open_decision": "ambiguous",
+      "top1_correct": true
     },
     {
       "query": "old readme draft",
@@ -361,7 +433,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "readme_old.txt"
+      "dreamos_top1": "readme_old.txt",
+      "top_similarity": 0.758,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "architecture of the backend and storage",
@@ -375,7 +450,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "architecture_notes.txt"
+      "dreamos_top1": "architecture_notes.txt",
+      "top_similarity": 0.684,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "earnings from a side job for a small shop",
@@ -389,7 +467,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "recieved_payment.txt"
+      "dreamos_top1": "recieved_payment.txt",
+      "top_similarity": 0.4862,
+      "open_decision": "abstain",
+      "top1_correct": true
     },
     {
       "query": "present for my mother",
@@ -403,7 +484,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "gift_ideas.txt"
+      "dreamos_top1": "gift_ideas.txt",
+      "top_similarity": 0.718,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "bill from the college cafeteria",
@@ -417,7 +501,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "scan0007.txt"
+      "dreamos_top1": "scan0007.txt",
+      "top_similarity": 0.6174,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "how to brew a hot drink with spices",
@@ -431,7 +518,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "recipe.txt"
+      "dreamos_top1": "recipe.txt",
+      "top_similarity": 0.6521,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "physical activity diary",
@@ -445,7 +535,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "workout_log.txt"
+      "dreamos_top1": "workout_log.txt",
+      "top_similarity": 0.6711,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "holiday to historic sites in Maharashtra",
@@ -459,7 +552,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "travel_plan.txt"
+      "dreamos_top1": "travel_plan.txt",
+      "top_similarity": 0.5867,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "sorting algorithm from my data structures class",
@@ -473,7 +569,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "script1.py"
+      "dreamos_top1": "script1.py",
+      "top_similarity": 0.5459,
+      "open_decision": "abstain",
+      "top1_correct": true
     },
     {
       "query": "how to remember my login credentials",
@@ -487,7 +586,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "password_hint_DO_NOT_SHARE.txt"
+      "dreamos_top1": "password_hint_DO_NOT_SHARE.txt",
+      "top_similarity": 0.609,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "remarks from our mentor about what to improve",
@@ -503,7 +605,10 @@
         "embedding": 2,
         "dreamos": 2
       },
-      "dreamos_top1": "quotes.txt"
+      "dreamos_top1": "quotes.txt",
+      "top_similarity": 0.5865,
+      "open_decision": "ambiguous",
+      "top1_correct": false
     },
     {
       "query": "unfinished job application document of Krushna",
@@ -517,7 +622,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "Untitled document.txt"
+      "dreamos_top1": "Untitled document.txt",
+      "top_similarity": 0.7025,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "the latest version of my job application document",
@@ -531,7 +639,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "final_final_v3.txt"
+      "dreamos_top1": "final_final_v3.txt",
+      "top_similarity": 0.6691,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "reasons we chose this project over the other two ideas",
@@ -546,7 +657,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "proposal_draft.txt"
+      "dreamos_top1": "proposal_draft.txt",
+      "top_similarity": 0.6238,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "psychology book takeaways about intuition and deliberation",
@@ -560,7 +674,10 @@
         "embedding": 3,
         "dreamos": 1
       },
-      "dreamos_top1": "book_notes.txt"
+      "dreamos_top1": "book_notes.txt",
+      "top_similarity": 0.5691,
+      "open_decision": "ambiguous",
+      "top1_correct": true
     },
     {
       "query": "spending breakdown for the semester",
@@ -575,7 +692,10 @@
         "embedding": 1,
         "dreamos": 2
       },
-      "dreamos_top1": "quotes.txt"
+      "dreamos_top1": "quotes.txt",
+      "top_similarity": 0.5713,
+      "open_decision": "ambiguous",
+      "top1_correct": false
     },
     {
       "query": "diary entry about a frustrating day fixing wrong results",
@@ -589,7 +709,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "journal_march.txt"
+      "dreamos_top1": "journal_march.txt",
+      "top_similarity": 0.6595,
+      "open_decision": "open",
+      "top1_correct": true
     },
     {
       "query": "scratch code to call the local model vector endpoint",
@@ -603,7 +726,10 @@
         "embedding": 1,
         "dreamos": 1
       },
-      "dreamos_top1": "test123.py"
+      "dreamos_top1": "test123.py",
+      "top_similarity": 0.6893,
+      "open_decision": "open",
+      "top1_correct": true
     }
   ]
 }
