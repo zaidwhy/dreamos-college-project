@@ -64,7 +64,7 @@ function sectionHead(numeral, title) {
     alignment: AlignmentType.CENTER,
     spacing: { before: 140, after: 70 },
     keepNext: true,
-    children: [new TextRun({ text: `${numeral}. ${title.toUpperCase()}`, font: FONT, size: T10, bold: true })],
+    children: [new TextRun({ text: `${numeral}. ${title}`, font: FONT, size: T10, smallCaps: true })],
   });
 }
 
@@ -72,7 +72,7 @@ function subHead(title) {
   return new Paragraph({
     spacing: { before: 80, after: 30 },
     keepNext: true,
-    children: [new TextRun({ text: title, font: FONT, size: T10, bold: true, italics: true })],
+    children: [new TextRun({ text: title, font: FONT, size: T10, italics: true })],
   });
 }
 
@@ -82,7 +82,7 @@ function leadIn(label, text) {
     spacing: { line: 230, after: 80 },
     children: [
       new TextRun({ text: `${label}: `, font: FONT, size: T9, bold: true, italics: true }),
-      new TextRun({ text, font: FONT, size: T9 }),
+      new TextRun({ text, font: FONT, size: T9, bold: true }),
     ],
   });
 }
@@ -174,7 +174,7 @@ function authorTable(authors) {
       borders: noBorders, width: { size: w, type: WidthType.DXA },
       margins: { top: 20, bottom: 20, left: 60, right: 60 },
       children: [
-        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: name, font: FONT, size: 24, bold: true })] }),
+        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: name, font: FONT, size: 22 })] }),
         new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 0 }, children: [new TextRun({ text: roll, font: FONT, size: T9 })] }),
       ],
     })) })],
@@ -184,7 +184,7 @@ function authorTable(authors) {
 // ---------------------------------------------------------------- title block (1 column)
 const titleBlock = [
   new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 0, after: 100 }, children: [
-    new TextRun({ text: "DreamOS: Trustworthy Semantic File Management with Local Models and a Checkable Privacy Audit", font: FONT, size: 40, bold: true }),
+    new TextRun({ text: "DreamOS: Trustworthy Semantic File Management with Local Models and a Checkable Privacy Audit", font: FONT, size: 48 }),
   ] }),
   ...(ANON
     ? [new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 140 }, children: [
@@ -405,15 +405,15 @@ const part9 = [
 
 const AI_SENTENCE = "Generative AI (Claude, Anthropic) assisted with drafting text and with figure and analysis code; the authors checked all content and results and are responsible for them.";
 const ack = ANON ? (process.env.AI_DISCLOSURE === "1" ? [
-  new Paragraph({ spacing: { before: 60, after: 40 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "ACKNOWLEDGMENT", font: FONT, size: T10, bold: true })] }),
+  new Paragraph({ spacing: { before: 60, after: 40 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Acknowledgment", font: FONT, size: T10, smallCaps: true })] }),
   p(AI_SENTENCE, { after: 60 }),
 ] : []) : [
-  new Paragraph({ spacing: { before: 60, after: 40 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "ACKNOWLEDGMENT", font: FONT, size: T10, bold: true })] }),
+  new Paragraph({ spacing: { before: 60, after: 40 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "Acknowledgment", font: FONT, size: T10, smallCaps: true })] }),
   p("The authors thank IICT, MGM University, for the Project Monitoring structure under which this work was reviewed." + (process.env.AI_DISCLOSURE === "1" ? " " + AI_SENTENCE : ""), { after: 60 }),
 ];
 
 const refs = [
-  new Paragraph({ spacing: { before: 60, after: 40 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "REFERENCES", font: FONT, size: T10, bold: true })] }),
+  new Paragraph({ spacing: { before: 60, after: 40 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "References", font: FONT, size: T10, smallCaps: true })] }),
   refEntry(1, "Z. Shi et al., “From Commands to Prompts: LLM-Based Semantic File System for AIOS,” in Proc. ICLR, 2025, arXiv:2410.11843."),
   refEntry(2, "T. Mikolov, K. Chen, G. Corrado and J. Dean, “Efficient Estimation of Word Representations in Vector Space,” arXiv:1301.3781, 2013."),
   refEntry(3, "N. Reimers and I. Gurevych, “Sentence-BERT: Sentence Embeddings Using Siamese BERT-Networks,” in Proc. EMNLP-IJCNLP, 2019."),
@@ -444,8 +444,8 @@ const refs = [
 // ---------------------------------------------------------------- document
 const footer = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: T9 })] })] });
 const pageProps = { size: LETTER, margin: MARGINS };
-const one = (children) => ({ properties: { page: pageProps, type: SectionType.CONTINUOUS }, footers: { default: footer }, children });
-const two = (children) => ({ properties: { page: pageProps, type: SectionType.CONTINUOUS, column: { count: 2, space: 360 } }, footers: { default: footer }, children });
+const one = (children) => ({ properties: { page: pageProps, type: SectionType.CONTINUOUS }, children });
+const two = (children) => ({ properties: { page: pageProps, type: SectionType.CONTINUOUS, column: { count: 2, space: 360 } }, children });
 
 const doc = new Document({
   creator: ANON ? "Anonymous" : "Zaid Ali Syed, Om Vyas, Krushna Kadam, Minakshi R. Rajput",

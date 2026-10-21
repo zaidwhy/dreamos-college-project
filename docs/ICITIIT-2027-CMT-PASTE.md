@@ -39,4 +39,6 @@ Note: the printed author block (Roll No. lines and "Under the guidance of Dr. Mi
 ## File to upload
 
 C:/Users/Asus/projects/DreamOS/docs/paper/DreamOS-IEEE-Paper-AI-disclosed.pdf
-Size 502,637 bytes (0.50 MB, limit 10 MB), 6 pages (limit 6 including references), not encrypted.
+Size 489,382 bytes (0.49 MB, limit 10 MB), 6 pages (limit 6 including references), not encrypted.
+
+Template pass 2026-10-21: IEEE conference typography applied (24 pt title, 11 pt authors, bold 9 pt abstract, small-caps headings, no page numbers)
