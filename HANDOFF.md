@@ -1,6 +1,6 @@
 # DreamOS - Handoff
 
-Last updated: 2026-10-13
+Last updated: 2026-10-21
 
 ## What this is
 
@@ -73,6 +73,33 @@ submission proof goes to the RM faculty; reformat to the venue template once con
   (36 labelled queries, 4 systems). Paper + blackbook read it. Word PDF export hangs when launched as
   a child `powershell -File`; run Word COM inline in the PowerShell tool with `DisplayAlerts = 0` and
   delete a stale `~$*.docx` lock first (`docs/blackbook/export.ps1`).
+
+## Session 2026-10-21: paper audit and refinement (ACCTCON path)
+
+- ICITIIT'27 deadline (20 Oct) passed without a submission. Next venue: ACCTCON (acctconf.org, NMIET
+  Pune, IEEE Maharashtra TCS), full paper due **31 Oct 2026**, notification 30 Nov, conference 29-30 Jan
+  2027. Still gated on guide + RM faculty approval (dashboard D-11).
+- Paper audited against `docs/benchmarks/` and refined in `docs/paper/build_paper.js`; all four variants
+  rebuilt and re-exported, each 6 pages (Word COM `ComputeStatistics(2)`).
+  - New paired statistic for the headline: `docs/paper/bootstrap_ci.py` (seed 0, 10,000 resamples, pure
+    Python) writes `docs/benchmarks/retrieval_uncertainty.json`. DreamOS beats BM25 on 14 of 36 queries
+    and loses 0 (exact McNemar p = 1.2e-4; bootstrap Hit@1 difference +0.22 to +0.56); versus
+    embedding-only 2 wins / 1 loss, p = 1.0. Quoted in the abstract, V-A and VI-A, rendered from the JSON.
+  - BM25 baseline now fully described (own implementation, k1 = 1.5, b = 0.75, whole files, name
+    prepended, same tokeniser). Query provenance stated as in-sample (queries written while reading the
+    vault, parameters tuned on the same vault).
+  - Related work II-D added (RAG, Khoj, Recoll, Windows Recall); five references added and verified by
+    web search ([21] Lewis et al. 2020, [22] Microsoft Recall post 2024-09-27, [23] Khoj, [24] Recoll,
+    [25] Efron and Tibshirani 1993). Untraceable "0.41 to 19.6 files/s" removed. Wilson interval printed
+    exactly (0.82 to 0.98). Table II (schema) dropped to stay at 6 pages; VI-F folded into the Fig. 6 caption.
+  - Reproducibility sentence corrected: benchmark numbers come from committed result files; the
+    development-time figures in Sec. III and the lessons table come from the project log.
+- Build: `NODE_PATH="$(npm root -g)" node build_paper.js` from `docs/paper` (plain = named; `ANON=1`,
+  `AI_DISCLOSURE=1`, both = the other three variants). PDFs via Word COM inline (`SaveAs2(path, 17)`).
+- Full audit and change log (session scratch, not in git): the 2026-10-21 overall audit in
+  `zaid-os/audit/OVERALL-AUDIT-2026-10-21.md`.
+- Still open: 12 standard references were cited from knowledge and not re-fetched; HANDOFF-only
+  development figures (0.52 cosine, 98% profile, intent 88%) have no results file.
 
 ## Decisions worth knowing (not derivable from the code)
 
