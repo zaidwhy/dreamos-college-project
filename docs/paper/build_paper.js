@@ -161,7 +161,7 @@ function figure(file, widthDxa) {
   });
 }
 
-// Three equal columns, each author centred over name and roll number.
+// Equal columns, each author centred over name and e-mail (IEEE author block).
 function authorTable(authors) {
   const none = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
   const noBorders = { top: none, bottom: none, left: none, right: none };
@@ -192,19 +192,16 @@ const titleBlock = [
       ] })]
     : [
         authorTable([
-          ["Zaid Ali Syed", "Roll No. 2305139"],
-          ["Om Vyas", "Roll No. 2305170"],
-          ["Krushna Kadam", "Roll No. 2305165"],
+          ["Zaid Ali Syed", "sidzaid72@gmail.com"],
+          ["Om Vyas", "vyasom100@gmail.com"],
+          ["Krushna Kadam", "kadamkrushna412005@gmail.com"],
+          ["Minakshi R. Rajput", "mrajput@mgmu.ac.in"],
         ]),
-        new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 40, after: 10 }, children: [
-          new TextRun({ text: "Under the guidance of ", font: FONT, size: T10, italics: true }),
-          new TextRun({ text: "Dr. Minakshi R. Rajput", font: FONT, size: T10, bold: true }),
-        ] }),
         new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 40, after: 10 }, children: [
           new TextRun({ text: "Department of Information Technology, Institute of Information and Communication Technology (IICT)", font: FONT, size: T9, italics: true }),
         ] }),
         new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 120 }, children: [
-          new TextRun({ text: "MGM University, Chhatrapati Sambhajinagar, India  |  sidzaid72@gmail.com", font: FONT, size: T9, italics: true }),
+          new TextRun({ text: "MGM University, Chhatrapati Sambhajinagar, India", font: FONT, size: T9, italics: true }),
         ] }),
       ]),
 ];
@@ -412,7 +409,7 @@ const ack = ANON ? (process.env.AI_DISCLOSURE === "1" ? [
   p(AI_SENTENCE, { after: 60 }),
 ] : []) : [
   new Paragraph({ spacing: { before: 60, after: 40 }, alignment: AlignmentType.CENTER, children: [new TextRun({ text: "ACKNOWLEDGMENT", font: FONT, size: T10, bold: true })] }),
-  p("The authors thank their project guide, Dr. Minakshi R. Rajput, and IICT, MGM University, for the Project Monitoring structure under which this work was reviewed." + (process.env.AI_DISCLOSURE === "1" ? " " + AI_SENTENCE : ""), { after: 60 }),
+  p("The authors thank IICT, MGM University, for the Project Monitoring structure under which this work was reviewed." + (process.env.AI_DISCLOSURE === "1" ? " " + AI_SENTENCE : ""), { after: 60 }),
 ];
 
 const refs = [
@@ -451,7 +448,7 @@ const one = (children) => ({ properties: { page: pageProps, type: SectionType.CO
 const two = (children) => ({ properties: { page: pageProps, type: SectionType.CONTINUOUS, column: { count: 2, space: 360 } }, footers: { default: footer }, children });
 
 const doc = new Document({
-  creator: ANON ? "Anonymous" : "Zaid Ali Syed, Om Vyas, Krushna Kadam",
+  creator: ANON ? "Anonymous" : "Zaid Ali Syed, Om Vyas, Krushna Kadam, Minakshi R. Rajput",
   title: "DreamOS: Trustworthy Semantic File Management with Local Models and a Checkable Privacy Audit",
   styles: { default: { document: { run: { font: FONT, size: T10 } } } },
   sections: [
