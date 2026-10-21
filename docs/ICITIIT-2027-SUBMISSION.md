@@ -1,4 +1,6 @@
-# ICITIIT'27 submission notes (checked 2026-10-15)
+# ICITIIT'27 submission notes (checked 2026-10-21)
+
+Checked 2026-10-21 on icitiit27.iiitkottayam.ac.in. The deadline moved from 20 Oct to **30 Oct 2026, 11:59 PM IST**.
 
 Conference: 8th International Conference on Innovative Trends in Information Technology, IIIT Kottayam,
 19-20 Feb 2027, in person, technically co-sponsored by IEEE Kerala Section.
@@ -8,25 +10,44 @@ Theme: "Beyond Generative AI: Engineering Intelligent, Trustworthy, Autonomous, 
 
 | Item | Value |
 |---|---|
-| Submission deadline | **20 Oct 2026, 11:59 PM IST** |
+| Submission deadline | **30 Oct 2026, 11:59 PM IST** (superseded 2026-10-21: was 20 Oct 2026; the site banner shows both with the later date replacing the earlier) |
 | Notification / camera-ready | 20 Dec 2026 / 10 Jan 2027 |
-| Submission system | Microsoft CMT: https://cmt3.research.microsoft.com/ICITIIT2027 (needs a CMT account) |
+| Submission system | Microsoft CMT: https://cmt3.research.microsoft.com/ICITIIT2027. The link currently shows Create New Account (email, password, name, organization, country, CAPTCHA, terms). **Zaid creates or logs into the account himself.** |
+| Template | "Use only IEEE standard two column conference paper template" |
+| Length | "The maximum length of the paper for review is 6 pages including references" |
+| File | "The maximum File Size allowed is 10 MB in PDF format without encryption and/or passwords" |
+| Desk rejection | "Papers having poor quality and/or high similarity index will be desk rejected (without review)" |
+| Review model, AI policy | Not stated |
 | Publication | "Accepted and presented papers will be submitted for possible publication in IEEE Xplore" |
-| Page limit | Registrations page: max 8 pages; over 6 pages costs INR 1,000 per page (USD 20 foreign) |
-| Registration | Full Author registration is mandatory for IEEE Xplore. Student author fee INR 6,000 (IEEE member) / 7,000 (non-member) if paid by 16 Dec 2026 |
+| Registration page | max 8 pages; over 6 pages costs INR 1,000 per page (USD 20 foreign). Full Author registration is mandatory for IEEE Xplore. Student author fee INR 6,000 (IEEE member) / 7,000 (non-member) if paid by 16 Dec 2026 |
 | Refunds | None once a paper is accepted and registered |
 
-Tracks that fit DreamOS: (2) Data Science, Knowledge Engineering, and Predictive Analytics; (5) Secure,
-Privacy-Preserving, and Quantum Computing Technologies; (1) Foundation AI, Machine Learning, and Intelligent
-Computing Systems. Pick track 2 or 5 in CMT.
+Call-for-papers tracks (unnumbered on the site): Foundation AI, Generative AI, Machine Learning and Intelligent
+Computing Systems; Data Science, Knowledge Engineering, and Intelligent Analytics; IoT, Cloud Technologies, and
+Cyber-Physical Systems; Networking, Wireless Systems and Smart Connectivity; Secure, Trustworthy,
+Privacy-Preserving, and Quantum Computing Technologies; Human-Centered Computing, Digital Humanities, and
+Interactive Technologies; AI for Sustainable Development, Society, and Emerging Interdisciplinary Applications.
 
-## What the site does NOT state (ask icitiit27@iiitkottayam.ac.in, note the page's mailto says icitiit26@)
+Track recommendation: first choice "Secure, Trustworthy, Privacy-Preserving, and Quantum Computing Technologies";
+alternative "Data Science, Knowledge Engineering, and Intelligent Analytics".
+
+PDF checks run 2026-10-21: `DreamOS-IEEE-Paper-AI-disclosed.pdf` is 6 pages, 0.50 MB, not encrypted. Its author
+block reads "Roll No. ... Under the guidance of Dr. Minakshi R. Rajput", a college-report block, not an IEEE
+author block (names, affiliation, emails). Paste text for the CMT form: `docs/ICITIIT-2027-CMT-PASTE.md`.
+
+## Open before upload
+
+- (a) Author block to IEEE format with emails, once Zaid supplies the emails (Om Vyas, Krushna Kadam, and Dr. Rajput if listed).
+- (b) Guide as co-author: yes or no (Zaid's answer pending).
+- (c) Which build: the AI-disclosed named build by default; the anonymous AI-disclosed build only if CMT or the chairs state double-blind.
+
+## What the site does NOT state (ask icitiit27@iiitkottayam.ac.in, note the page's mailto says icitiit26@) (partly superseded 2026-10-21: template, page limit, file limit and desk-rejection rule are now stated, see above; review model and AI policy still are not)
 
 - Template, review model (single or double blind), plagiarism limit, **AI policy**. None of these appear on
   the 2027 pages, and the ICITIIT'25 pages (author and camera-ready) also have no AI policy.
 - The 2027 dates page and registrations page disagree (early registration 10 Jan vs 16 Dec). Confirm.
 
-## What the ICITIIT'25 author pages said (use as the working rules until the chairs say otherwise)
+## What the ICITIIT'25 author pages said (superseded 2026-10-21 for the first four bullets: the 2027 instructions page now states them; the camera-ready bullet still comes from 2025)
 
 - "Use only IEEE standard two column conference paper template".
 - "The maximum length of the paper for review is 6 pages including references."
@@ -70,7 +91,7 @@ double-blind, use the Anonymous one.
   are our reference implementations; scale data is synthetic; novelty is engineering and evaluation, not a
   new algorithm. These are all stated in the paper.
 
-## Before 20 Oct
+## Before 30 Oct (superseded 2026-10-21: deadline was 20 Oct; see "Open before upload" above)
 
 1. Create the CMT account, confirm template/review/AI policy by email (one short message to the chairs).
 2. Pick the build (above), open the PDF once to check names, and upload.
