@@ -179,3 +179,8 @@ rehearsals with `python backend/scripts/reset_demo_state.py`. The release app is
 
 Read this file, then `README.md` (architecture map, how to run). `CLAUDE.md` is no longer tracked
 (copy in `claude-md-vault`).
+
+## 2026-10-22 Dependabot cleanup (D-59)
+
+- Fixed 9 of 14 alerts: `npm audit fix` in frontend/ (source-map-js, nanoid, vite; audit now 0) and pypdf 6.16.1 -> 6.19.0 (8 alerts). Backend pytest 123 passed; `npm run build` passes. The frontend has no test script.
+- Left 5. chromadb (4 alerts, 2 critical): vulnerable range runs through 1.5.9, our pinned version, and no patched release exists. glib (1 moderate, Cargo.lock): pulled in transitively by Tauri's Linux GTK3 stack, which pins glib 0.18; not compiled on Windows, so left. Release exe not rebuilt.
