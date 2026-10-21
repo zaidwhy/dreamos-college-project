@@ -101,6 +101,8 @@ submission proof goes to the RM faculty; reformat to the venue template once con
 - Still open: 12 standard references were cited from knowledge and not re-fetched; HANDOFF-only
   development figures (0.52 cosine, 98% profile, intent 88%) have no results file.
 
+Submitted to Confluence 2027 (CMT 631, 18:44 IST), anonymous AI-disclosed build; notification 25 Dec; guide added as fourth author; ICITIIT and ACCTCON dropped.
+
 ## Decisions worth knowing (not derivable from the code)
 
 - **All derived tables key on `files.id`, not path.** `organizer.apply/revert` renames paths; ids

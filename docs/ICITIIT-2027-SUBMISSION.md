@@ -1,3 +1,5 @@
+> Superseded 2026-10-21: the paper was submitted to Confluence 2027 instead (CMT Paper ID 631). Do not submit to ICITIIT or ACCTCON while that submission is under review (simultaneous submission is not allowed).
+
 # ICITIIT'27 submission notes (checked 2026-10-21)
 
 Checked 2026-10-21 on icitiit27.iiitkottayam.ac.in. The deadline moved from 20 Oct to **30 Oct 2026, 11:59 PM IST**.

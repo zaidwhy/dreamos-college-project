@@ -50,3 +50,13 @@ File docs/paper/DreamOS-IEEE-Paper-Anonymous-AI-disclosed.pdf
 - Pages: 6 (limit 6). Encrypted: no. Size 485,440 bytes (under 10 MB).
 - Contains "Anonymous submission for double-blind review": yes. Contains "Generative AI": yes.
 - Absent: Syed, Vyas, Kadam, Rajput, sidzaid72, vyasom100, kadamkrushna, mrajput, "MGM University", "IICT" (all checked, none found).
+
+## Outcome
+
+- 2026-10-21 18:44:16 IST: submitted to Confluence 2027 (17th International Conference on Cloud Computing, Data Science and Engineering, Amity University Noida, IEEE record #71526) through Microsoft CMT, Paper ID 631.
+- Title: "DreamOS: Trustworthy Semantic File Management with Local Models and a Checkable Privacy Audit". File: DreamOS-IEEE-Paper-Anonymous-AI-disclosed.pdf (474 KB, 6 pages).
+- Authors: Zaid Ali Syed (primary contact, zaid.syed@mgmedu.org), Om Vyas, Krushna Kadam, Minakshi Rajput, all MGM University, India. No conflicts of interest declared (no MGM reviewer in the 166-person list).
+- Summary: https://cmt3.research.microsoft.com/Confluence2027/Submission/Summary/631 (screenshot: docs/confluence-2027-submission-631.png).
+- Timeline: notification 25 Dec 2026, camera-ready 30 Dec 2026, conference 21 to 22 Jan 2027 (physical, Noida). Student registration fee not yet read from the site.
+- ICITIIT 2027 not pursued (simultaneous submission forbidden by Confluence); ACCTCON likewise dropped.
+- To fix: CMT profile organisation reads "MGM Univeristy" (typo in the CMT account, not in the paper); correct it before camera-ready.
