@@ -184,3 +184,5 @@ Read this file, then `README.md` (architecture map, how to run). `CLAUDE.md` is 
 
 - Fixed 9 of 14 alerts: `npm audit fix` in frontend/ (source-map-js, nanoid, vite; audit now 0) and pypdf 6.16.1 -> 6.19.0 (8 alerts). Backend pytest 123 passed; `npm run build` passes. The frontend has no test script.
 - Left 5. chromadb (4 alerts, 2 critical): vulnerable range runs through 1.5.9, our pinned version, and no patched release exists. glib (1 moderate, Cargo.lock): pulled in transitively by Tauri's Linux GTK3 stack, which pins glib 0.18; not compiled on Windows, so left. Release exe not rebuilt.
+
+- 2026-10-22 follow-up (D-59): rechecked PyPI, chromadb latest is still 1.5.9, no patched release. The 4 open chromadb alerts (GHSA-36p7-vc44-83pf, GHSA-xph7-9rjv-w5fr, GHSA-2wm9-hf6c-p5cr, GHSA-f4j7-r4q5-qw2c) concern the chromadb server endpoints and auth providers; DreamOS uses only the embedded persistent client on 127.0.0.1, so they do not apply. glib GHSA-wrw7-89jp-8q8g (needs 0.20.0): `cargo update -p glib --precise 0.20.0` fails because gtk 0.18.2 (required by tauri 2.11.5) needs glib 0.18; Linux-only transitive pin, not in the Windows build.
