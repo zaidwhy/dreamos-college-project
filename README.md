@@ -1,3 +1,5 @@
+<img src=".github/plate.svg" alt="DreamOS: A file manager that finds things by what they mean, not where they were put. final-year B.Tech project; imports the personal-llm kernel; MGM University, IICT. Core strip: 52 commits over 13 weeks, Jul 2026 to Oct 2026." width="100%">
+
 # DreamOS
 
 Final year B.Tech project (Dept. of Information Technology, IICT, MGM University).
@@ -174,3 +176,7 @@ is sandboxed rather than a real personal folder.
 Monitoring - I checkpoint: literature review, requirement analysis, system design (architecture,
 DFDs, UML, ER diagram, wireframe), and current implementation status. Diagram sources are in
 `docs/diagrams/`.
+
+---
+
+<sub>One plate from the survey at [github.com/zaidwhy](https://github.com/zaidwhy). The strip on the plate above is this repository's own commit history, one band per week.</sub>
