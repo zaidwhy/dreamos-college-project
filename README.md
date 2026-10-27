@@ -1,4 +1,7 @@
-<img src=".github/plate.svg" alt="DreamOS: A file manager that finds things by what they mean, not where they were put. final-year B.Tech project; imports the personal-llm kernel; MGM University, IICT. Core strip: 52 commits over 13 weeks, Jul 2026 to Oct 2026." width="100%">
+<picture>
+<source media="(max-width: 600px)" srcset=".github/plate-narrow.svg">
+<img src=".github/plate.svg" alt="DreamOS: A file manager that finds things by what they mean, not where they were put. final-year B.Tech project; imports the personal-llm kernel; MGM University, IICT. Core strip: 53 commits over 14 weeks, Jul 2026 to Oct 2026." width="100%">
+</picture>
 
 # DreamOS
 
