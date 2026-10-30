@@ -53,6 +53,21 @@ the blackbook cover and certificate and the deck title slide. IoT upgrade droppe
 **Also open:** IEEE paper (`docs/paper/`) needs guide + RM faculty approval before submission, then
 submission proof goes to the RM faculty; reformat to the venue template once conference links arrive.
 
+## Final state 2026-10-30 (read this first)
+
+- Monitoring done. Paper approved and submitted to ICITIIT'27 (IIIT Kottayam, notification 20 Dec 2026,
+  camera-ready 10 Jan 2027; decision pending). Notes: `docs/ICITIIT-2027-SUBMISSION.md`. Four builds in
+  `docs/paper/` (named, AI-disclosed, anonymous, both).
+- Blackbook 54 pages (appendices F-L added), deck 30 slides, checklist `docs/MONITORING-CHECKLIST.md`,
+  pen-drive copy in `monitoring-pack/` (gitignored). 123 tests pass.
+- Not verified: the rebuilt release exe was never launched; three paper references (NIST AI RMF, Amershi,
+  Johnson FAISS) were written from memory, check on Scholar before camera-ready.
+- Next only if accepted: camera-ready (IEEE PDF eXpress, similarity under 30%), register one Full Author,
+  student fee about INR 6,000-7,000 by 16 Dec.
+- Rebuild order for docs: `make_figures.py` -> `build_paper.js` -> `build_blackbook.js` -> Word export
+  (inline PowerShell, DisplayAlerts 0) -> `make_pages.py`; repeat until it prints `changed: False`, then
+  one TOC update.
+
 ## Session 2026-10-13: final polish
 
 - **Graph rebuild is no longer the limit.** Profiling at 5,000 files showed 98% of the 174 s rebuild
