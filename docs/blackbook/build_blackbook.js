@@ -55,7 +55,7 @@ function para(text, opts = {}) {
 
 // Chapter heading: centred, upper case, 14 pt bold. "Chapter N:" tags are stripped.
 const h1 = (text) => new Paragraph({
-  heading: HeadingLevel.HEADING_1, alignment: AlignmentType.CENTER, spacing: { before: 240, after: 280 },
+  heading: HeadingLevel.HEADING_1, pageBreakBefore: true, alignment: AlignmentType.CENTER, spacing: { before: 240, after: 280 },
   children: [new TextRun({ text: text.replace(/^Chapter \d+:\s*/, "").toUpperCase(), font: FONT, size: HEAD, bold: true })],
 });
 const h2 = (text) => new Paragraph({
@@ -80,7 +80,7 @@ function code(text) {
 }
 
 const caption = (text) => new Paragraph({
-  alignment: AlignmentType.CENTER, spacing: { before: 60, after: 160 },
+  alignment: AlignmentType.CENTER, keepNext: true, keepLines: true, spacing: { before: 60, after: 160 },
   children: [new TextRun({ text, font: FONT, size: BODY, italics: true })],
 });
 
@@ -102,24 +102,25 @@ const border = { style: BorderStyle.SINGLE, size: 4, color: "808080" };
 const borders = { top: border, bottom: border, left: border, right: border };
 
 function table(widths, header, rows, opts = {}) {
-  const { leftCols = [] } = opts;
+  const { leftCols = [], keep = true, size = BODY } = opts;
   const total = widths.reduce((a, b) => a + b, 0);
-  const cell = (text, w, isHead, ci) => new TableCell({
+  const cell = (text, w, isHead, ci, keepNext = false) => new TableCell({
     borders, width: { size: w, type: WidthType.DXA }, verticalAlign: VerticalAlign.CENTER,
     shading: isHead ? { fill: "D9D9D9", type: ShadingType.CLEAR } : undefined,
     margins: { top: 60, bottom: 60, left: 100, right: 100 },
     children: [new Paragraph({
-      alignment: isHead ? AlignmentType.CENTER : (leftCols.includes(ci) ? AlignmentType.LEFT : AlignmentType.LEFT),
+      alignment: isHead ? AlignmentType.CENTER : AlignmentType.LEFT,
+      keepNext,
       spacing: { line: 276, after: 0 },
-      children: [new TextRun({ text: String(text), font: FONT, size: BODY, bold: isHead })],
+      children: [new TextRun({ text: String(text), font: FONT, size, bold: isHead })],
     })],
   });
   return new Table({
     width: { size: total, type: WidthType.DXA },
     columnWidths: widths,
     rows: [
-      new TableRow({ tableHeader: true, cantSplit: true, children: header.map((t, i) => cell(t, widths[i], true, i)) }),
-      ...rows.map((r) => new TableRow({ cantSplit: true, children: r.map((t, i) => cell(t, widths[i], false, i)) })),
+      new TableRow({ tableHeader: true, cantSplit: true, children: header.map((t, i) => cell(t, widths[i], true, i, keep)) }),
+      ...rows.map((r, ri) => new TableRow({ cantSplit: true, children: r.map((t, i) => cell(t, widths[i], false, i, keep && ri < rows.length - 1)) })),
     ],
   });
 }
@@ -131,6 +132,7 @@ function tableCaption(label, title) {
     children: [new TextRun({ text: `${label} - ${title}`, font: FONT, size: BODY, bold: true })] });
 }
 const pageBreak = () => new Paragraph({ children: [new PageBreak()] });
+const h2NewPage = (text) => new Paragraph({ heading: HeadingLevel.HEADING_2, pageBreakBefore: true, spacing: { before: 0, after: 120 }, children: [new TextRun({ text: text.replace(/^(Appendix [A-Z]): /, "$1 "), font: FONT, size: BODY, bold: true })] });
 const spacer = (after = 120) => new Paragraph({ spacing: { after }, children: [] });
 
 // ---------------------------------------------------------------- numbers
@@ -262,9 +264,9 @@ const makeListOfTables = () => [h1("List of Tables"),
 
 // ---------------------------------------------------------------- TOC
 const contents = [
-  new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 240, after: 280 },
+  new Paragraph({ alignment: AlignmentType.CENTER, pageBreakBefore: true, spacing: { before: 240, after: 280 },
     children: [new TextRun({ text: "CONTENTS", font: FONT, size: HEAD, bold: true })] }),
-  new TableOfContents("Contents", { hyperlink: true, headingStyleRange: "1-3" }),
+  new TableOfContents("Contents", { hyperlink: true, headingStyleRange: "1-2" }),
 ];
 
 // ---------------------------------------------------------------- chapter 1
@@ -320,19 +322,19 @@ const ch3 = [
   h3("3.1.1 Functional requirements"),
   para(`${tref("Table 3.1")} lists the twelve functional requirements with a description of each.`, { keepNext: true }),
   tableCaption("Table 3.1", "Functional requirements"),
-  table([800, 2300, 4326, 1600], ["ID", "Requirement", "Description", "Status"], [
-    ["FR1", "Accept one natural-language message through a chat interface", "The user types a request in an ordinary sentence in one input box; no query syntax or file path is needed.", "Implemented"],
-    ["FR2", "Classify intent as search, open, related, workspace, organise or other", "A local language model decides what the user wants so that the request reaches the right module instead of always searching.", "Implemented"],
-    ["FR3", "Semantic search returning ranked files with score and snippet", "Files are ranked by meaning, each result shows a similarity score and a text snippet so that the match can be judged.", "Implemented"],
-    ["FR4", "Open the best match in its default application only when confident", "A file is launched only above the confidence bar; otherwise candidates are shown, so a wrong file is never opened silently.", "Implemented"],
-    ["FR5", "Generate a summary, tags and category for each file", "The model describes each file in one sentence and assigns tags and a category with the reason for it.", "Implemented"],
-    ["FR6", "Apply and reverse an organisation move", "A file is moved into its category folder only on confirmation, and the original path is stored so the move can be undone.", "Implemented"],
-    ["FR7", "Preview unorganised files before any change", "The user sees every proposed move before it is applied; nothing changes on disk during the preview.", "Implemented"],
-    ["FR8", "Index and re-index incrementally by content hash", "Unchanged files are skipped on later runs, so re-indexing a large folder only costs time for what changed.", "Implemented"],
-    ["FR9", "Model relationships between files and show related files", "Files are linked by similar content, direct reference and shared tags, and each link is shown with its reason.", "Implemented"],
-    ["FR10", "Resolve follow-up questions against the earlier conversation", "Messages such as “open the second one” or “open it” are resolved using the files shown in earlier turns.", "Implemented"],
-    ["FR11", "Recommend and create workspaces from relationships and usage", "Groups of related or frequently opened files are suggested, and a workspace opens all its files together.", "Implemented"],
-    ["FR12", "Report where data could leave the machine, from live configuration", "A privacy view lists each network endpoint in use and whether it is on this computer.", "Implemented"],
+  table([700, 3100, 3726, 1500], ["ID", "Requirement", "Description", "Status"], [
+    ["FR1", "Accept one natural-language message in a chat interface", "One input box; no query syntax or file path needed.", "Implemented"],
+    ["FR2", "Classify intent: search, open, related, workspace, organise or other", "A local model routes the request to the right module.", "Implemented"],
+    ["FR3", "Semantic search with ranked files, score and snippet", "Ranked by meaning; the score and snippet let the user judge the match.", "Implemented"],
+    ["FR4", "Open the best match only when confident", "Weak or ambiguous matches show candidates and open nothing.", "Implemented"],
+    ["FR5", "Generate a summary, tags and category per file", "One-sentence summary, tags and a category with its reason.", "Implemented"],
+    ["FR6", "Apply and reverse an organisation move", "Moves need confirmation; the original path is stored for undo.", "Implemented"],
+    ["FR7", "Preview unorganised files before any change", "Every proposed move is shown first; nothing changes on disk.", "Implemented"],
+    ["FR8", "Index and re-index incrementally by content hash", "Unchanged files are skipped on later runs.", "Implemented"],
+    ["FR9", "Model relationships between files and show related files", "Links by similar content, reference and shared tags, with the reason.", "Implemented"],
+    ["FR10", "Resolve follow-up questions from the conversation", "“open the second one” and “open it” use the files shown earlier.", "Implemented"],
+    ["FR11", "Recommend and create workspaces", "Groups of related or often-opened files open together.", "Implemented"],
+    ["FR12", "Report where data could leave the machine", "A privacy view lists each endpoint and whether it is local.", "Implemented"],
   ], { leftCols: [0, 1, 2, 3] }),
   h3("3.1.2 Non-functional requirements"),
   para(`${tref("Table 3.2")} lists the non-functional requirements, what each means for this system, and how it was evaluated.`, { keepNext: true }),
@@ -369,30 +371,30 @@ const ch4 = [
   h1("System Design"),
   h2("4.1 System Architecture"),
   para("DreamOS is a client-server application on one machine. The desktop client calls a local service over HTTP on 127.0.0.1:8420. The service classifies requests, searches, organises and computes relationships, and calls the local model runtime for language tasks. Two stores hold the data: a relational database for metadata, relationships, conversation and usage, and a vector database for the embeddings of text chunks."),
-  ...figure("01_architecture.png", 440, "Figure 4.1", "System architecture: desktop client, local service, local model runtime and storage",
+  ...figure("01_architecture.png", 396, "Figure 4.1", "System architecture: desktop client, local service, local model runtime and storage",
     "Figure 4.1 shows the four zones of the system. The desktop application (top right) holds the React views, a typed fetch client that keeps the session identifier, and the Tauri opener plugin that launches files. The backend service (centre) receives every request at its REST routes and hands chat messages to the Natural Language Interface, which calls the search engine, organiser, workspace manager, knowledge graph or context memory as the intent requires; the indexer is started from its own route. The local AI runtime (left) is called for embeddings and completions. Storage (bottom) holds vectors in ChromaDB, relational data in SQLite and the sandboxed vault files. The dotted line shows that a file is launched by the Tauri opener on the client, not by the service."),
   h2("4.2 Module Design"),
   para("The system is organised in six modules. The Natural Language Interface decides what a request means and routes it. The Semantic Search Engine returns files near the best match. The AI File Organiser proposes categories and reversible moves. The Knowledge Graph links files by similar content, by direct reference and by shared tags. The Context Memory Engine keeps the conversation so that a follow-up can be resolved, and records which files the user opens. The Workspace Manager turns the graph and usage into explainable recommendations and creates workspaces that open together."),
-  ...figure("02_module_design.png", 430, "Figure 4.2", "Module design and the data each module passes to the next",
+  ...figure("02_module_design.png", 387, "Figure 4.2", "Module design and the data each module passes to the next",
     "Figure 4.2 shows how control and data pass between the six modules. The Natural Language Interface is at the centre of control: it exchanges turns with the Context Memory Engine and dispatches requests to the Semantic Search Engine, the AI File Organizer, the Knowledge Graph and the Intelligent Workspace Manager. Search results and organiser output feed the Knowledge Graph, the Knowledge Graph feeds the Workspace Manager, and the Context Memory Engine supplies usage data to the Workspace Manager as well."),
   h2("4.3 Data Flow Diagrams and UML Diagrams"),
   h3("4.3.1 Data flow diagrams"),
-  ...figure("03_dfd_context.png", 400, "Figure 4.3", "Data flow diagram, context level",
+  ...figure("03_dfd_context.png", 360, "Figure 4.3", "Data flow diagram, context level",
     "The context-level diagram treats DreamOS as a single process. The user sends natural-language requests, clicks and workspace actions, and receives search results, related files, workspace suggestions, opened files and organisation summaries. The process exchanges embedding and generation requests with the local Ollama runtime and reads from, and moves files in, the file vault. No other external entity appears, which is the visual form of the claim that the system is self-contained."),
-  ...figure("04_dfd_level1.png", 440, "Figure 4.4", "Data flow diagram, level 1",
+  ...figure("04_dfd_level1.png", 396, "Figure 4.4", "Data flow diagram, level 1",
     "Level 1 splits the system into processes: 0.0 indexes the vault and builds the graph; 1.0 classifies intent with session context; 2.0 runs semantic search; 3.0 organises files; 4.0 routes the response; 5.0 opens a file through the Tauri opener; 6.0 finds related files; 7.0 manages workspaces and recommendations; and 8.0 resolves follow-ups and records usage. Four data stores are shown: the Chroma vector store (D1), SQLite metadata and graph edges (D2), the vault files (D3), and SQLite turns, usage and workspaces (D4)."),
   h3("4.3.2 UML diagrams"),
-  ...figure("05_use_case.png", 360, "Figure 4.5", "Use case diagram of user actions",
+  ...figure("05_use_case.png", 324, "Figure 4.5", "Use case diagram of user actions",
     "The use case diagram shows what the single actor, the user, can do: search files by meaning; open a file by description (which includes a search); preview unorganised files and apply or revert AI organisation (applying includes the preview); index the vault; ask a follow-up question (which extends opening a file and finding related files); find related files; explore the knowledge graph; create a workspace from a suggestion (which includes exploring the graph); open all files of a workspace; and start a new conversation."),
-  ...figure("06_class_diagram.png", 420, "Figure 4.6", "Class diagram of response and settings classes",
+  ...figure("06_class_diagram.png", 378, "Figure 4.6", "Class diagram of response and settings classes",
     "The class diagram shows the data classes exchanged between modules. NLResponse is the single object returned for every message; it carries the intent, a message and, depending on the intent, search results, organisation suggestions, an open path, related files, recommendations and workspaces. SearchHit, OrganizeSuggestion, RelatedFile and Recommendation are its elements, Turn is how a message is saved, OllamaClient offers embed and generate_json, and Settings holds the thresholds that scoring and the recommendation rules read."),
-  ...figure("07_sequence_open.png", 440, "Figure 4.7", "Sequence diagram of an open request",
+  ...figure("07_sequence_open.png", 396, "Figure 4.7", "Sequence diagram of an open request",
     "The sequence follows the request “open my resume”. The React interface posts the message to /chat; the interface module asks llama3.2 to classify it at temperature 0, which returns intent open and query resume. Semantic search then asks ChromaDB for the nearest embeddings and returns the best match with its cosine score. The response carries the open path back to the interface, which asks the Tauri opener plugin to launch the file in its default application."),
-  ...figure("10_sequence_followup.png", 440, "Figure 4.8", "Sequence diagram of a follow-up question resolved from memory",
+  ...figure("10_sequence_followup.png", 396, "Figure 4.8", "Sequence diagram of a follow-up question resolved from memory",
     "Two turns are shown. In the first, “find my invoices” is classified as a search, three files are returned and the turn is saved with their identifiers. In the second, “open the second one” is classified with the recent turns as context; the model returns intent open with a refers-to-previous flag, the ordinal rule resolves the second file of the last results from the Context Memory Engine, the open is recorded as a usage event, and the path is returned to the client for launching."),
   h2("4.4 Database Design"),
   para("File metadata is stored in SQLite and each file's text chunks are stored as vectors in ChromaDB, linked by the file path. All relationship, memory, usage and workspace tables refer to the file's numeric identifier rather than its path. The organiser renames a file when it moves it, but the identifier does not change, so no table needs rewriting after a move."),
-  ...figure("08_er_diagram.png", 400, "Figure 4.9", "Entity-relationship diagram",
+  ...figure("08_er_diagram.png", 360, "Figure 4.9", "Entity-relationship diagram",
     "The entity-relationship diagram centres on the FILES table, whose integer id is referenced by every other table. VECTOR_ENTRIES holds the chunk vectors, linked to a file through its path. FILE_EDGES links two files by src_id and dst_id with a kind and a weight. USAGE_EVENTS records each open. WORKSPACES and WORKSPACE_FILES give named groups of files, and CONVERSATION_TURNS stores each turn with the identifiers of the files it showed, kept as a JSON list."),
   para(`${tref("Table 4.1")} gives the fields of the central files table.`, { keepNext: true }),
   tableCaption("Table 4.1", "Fields of the files table"),
@@ -414,7 +416,7 @@ const ch4 = [
   ]),
   h2("4.5 UI / UX Design"),
   para("The interface has four views: a chat view for requests, a knowledge-graph view, a workspace view and a privacy view. Results appear as cards with the action the user can take, so a file is opened from the card that shows it. Related-file answers show why each file is linked, such as similar content, a direct reference or shared tags."),
-  ...figure("ui-chat.png", 430, "Figure 4.10", "Chat view: related files with the reason each is linked",
+  ...figure("ui-chat.png", 387, "Figure 4.10", "Chat view: related files with the reason each is linked",
     "The chat view shows the answer to “what's related to my resume”, with a reason chip on each result card (referenced, similar content), followed by the answer to “suggest some workspaces”, which offers three suggested groups and lists the existing workspace. Every card carries the action available for it, such as Open or Create workspace.", SHOTS),
   h2("4.6 Technology Stack"),
   para(`${tref("Table 4.3")} lists the technology used in each layer.`, { keepNext: true }),
@@ -466,9 +468,9 @@ neighbours = np.argpartition(-sims, k - 1, axis=1)[:, :k]`),
         if weak_referenced:              # model's guess, last resort only
             return _open_response(search.hit_for_path(weak_referenced))`),
   h2("5.4 Screenshots of Outputs"),
-  ...figure("ui-knowledge-graph.png", 430, "Figure 5.1", "Knowledge-graph view with a selected file and its neighbours",
+  ...figure("ui-knowledge-graph.png", 387, "Figure 5.1", "Knowledge-graph view with a selected file and its neighbours",
     "The graph view lays out the 37 files with 24 links; 12 files have no link. Edge colour shows the kind of relationship (similar content, names another file, shared tags). Selecting final_final_v3.txt highlights its neighbours and lists them in the side panel with the reason for each link, here similar content with proposal_draft.txt and similar content plus a direct reference to resume_final.txt.", SHOTS),
-  ...figure("ui-workspaces.png", 430, "Figure 5.2", "Workspace view with a created workspace and suggestions",
+  ...figure("ui-workspaces.png", 387, "Figure 5.2", "Workspace view with a created workspace and suggestions",
     "The workspace view lists the workspaces already created, each with Open all and Delete actions, above the rule-based suggestions. Each suggestion names the group, explains why the files belong together and lists them, with a single button that creates the workspace.", SHOTS),
 ];
 
@@ -524,7 +526,7 @@ const ch7 = [
     ["5,000", r1(b5k.search_p50_ms), r1(b5k.search_p95_ms), d2(b5k.precision_at_5), String(b5k.precision_queries_with_no_result)],
   ]),
   para("Precision@5 is the share of the five best results that come from the topic the query describes. On this synthetic data it stays at the maximum, so it shows that the topics separate, but it does not measure retrieval on real documents. The controlled comparison in Section 7.2 addresses that on the demonstration vault."),
-  ...figure("fig_scale.png", 440, "Figure 7.1", "Scale results: graph rebuild time, indexing throughput and search latency",
+  ...figure("fig_scale.png", 396, "Figure 7.1", "Scale results: graph rebuild time, indexing throughput and search latency",
     "Figure 7.1 plots the same runs as Tables 7.1 and 7.2. Panel (a) shows the knowledge-graph rebuild time on a logarithmic scale, with the original pairwise loop, the vectorised-similarity version and the final version side by side; the 5,000-file loop was not measured. Panel (b) shows indexing throughput, which includes the graph rebuild. Panel (c) shows median and 95th-percentile search latency, which grows with the number of stored vectors.", FIGS),
   h2("7.2 Comparison with Existing Systems"),
   h3("7.2.1 Capability comparison"),
@@ -551,7 +553,7 @@ const ch7 = [
     ["DreamOS (shipped)", d2(ALL.dreamos.hit_at_1), d2(ALL.dreamos.hit_at_3), d2(ALL.dreamos.mrr), d2(SH.dreamos.hit_at_1), d2(NS.dreamos.hit_at_1), d2(NS.dreamos.mrr)],
   ]),
   para(`DreamOS places a relevant file first for ${pct(ALL.dreamos.hit_at_1)} of all queries, against ${pct(ALL.keyword.hit_at_1)} for BM25 and ${pct(ALL.filename.hit_at_1)} for filename match. The partition explains the gap. When a query shares a word with its target, BM25 reaches Hit@1 ${d2(SH.keyword.hit_at_1)} and DreamOS ${d2(SH.dreamos.hit_at_1)}. When it shares none, both lexical baselines score exactly 0.00 by construction, while DreamOS scores ${d2(NS.dreamos.hit_at_1)} with every target inside its top three. Examples are “present for my mother” finding the gift list that says “Mom's birthday”, and “how to brew a hot drink with spices” finding the chai recipe.`),
-  ...figure("fig_retrieval.png", 360, "Figure 7.2", "Hit@1 by system and query group, with 95% Wilson intervals",
+  ...figure("fig_retrieval.png", 324, "Figure 7.2", "Hit@1 by system and query group, with 95% Wilson intervals",
     "Figure 7.2 shows Hit@1 for each system, split by whether the query shares a word with its target. The error bars are 95% Wilson score intervals, which are wide because the groups are small (26 and 10 queries). The lexical systems cannot answer queries that share no word with the target; the two embedding-based systems can.", FIGS),
   para(`Two results are less favourable and are reported as measured. First, the keyword boost helps queries that share words (Hit@1 ${d2(SH.embedding.hit_at_1)} to ${d2(SH.dreamos.hit_at_1)}) but costs one of the ${RETR.queries_no_shared_words} paraphrase queries (${d2(NS.embedding.hit_at_1)} to ${d2(NS.dreamos.hit_at_1)}); the intervals overlap, so the data cannot separate the two configurations. Second, DreamOS missed rank 1 on two queries (“remarks from our mentor about what to improve” and “spending breakdown for the semester”), both of which placed an unrelated quotes file first with the correct file second. The baselines are reference implementations of the lexical class, not the Windows Search, Spotlight or Everything products, so the table supports a claim about lexical versus embedding retrieval, not about any named product.`),
   h2("7.3 Observations"),
@@ -647,10 +649,10 @@ const appendices = [
   bullet("A banner at the top of the window names any missing model and gives the command to download it. If it says Ollama is not reachable, start the Ollama application and reload."),
   bullet("The first request after a cold start can take a minute while the language model loads."),
   bullet("A guess is never opened: if a request is weak or two files match equally, candidates are shown instead."),
-  h2("Appendix G Service interface (REST API)"),
+  h2NewPage("Appendix G Service interface (REST API)"),
   para(`${tref("Table G.1")} lists the routes of the local service. The service listens on 127.0.0.1 port 8420 only.`, { keepNext: true }),
   tableCaption("Table G.1", "Routes of the local service"),
-  table([800, 3000, 5226], ["Method", "Route", "Purpose"], [
+  table([900, 2900, 5226], ["Method", "Route", "Purpose"], [
     ["GET", "/health", "Liveness, plus whether Ollama is reachable and which configured models are missing"],
     ["POST", "/index", "Scan the vault, index new or changed files, prune deleted ones, rebuild the graph"],
     ["POST", "/search", "Semantic search for a query; returns ranked files with score and snippet"],
@@ -671,7 +673,7 @@ const appendices = [
     ["POST", "/workspace", "Create a workspace from a group of files"],
     ["DELETE", "/workspace/{id}", "Delete a workspace (its files are untouched)"],
     ["POST", "/workspace/{id}/open", "Return the paths of every file in a workspace for opening"],
-  ]),
+  ], { size: 22 }),
   h2("Appendix H Configuration parameters"),
   para(`${tref("Table H.1")} lists the tunable parameters. Every value was set from measurements on the demonstration vault and can be overridden with an environment variable that starts with DREAMOS_.`, { keepNext: true }),
   tableCaption("Table H.1", "Configuration parameters and their meaning"),
@@ -693,42 +695,24 @@ const appendices = [
     ["stale_days", "90", "Days without use before a file is called stale"],
     ["supported_extensions", ".txt .md .py .js .pdf .docx", "File types that are read and indexed"],
   ]),
-  h2("Appendix I Automated test inventory"),
-  para(`The service has 123 automated tests, all of which run offline. ${tref("Table I.1")} shows how they are distributed. The model runtime is replaced by fixtures that return fixed vectors and fixed JSON, so the suite checks DreamOS's own logic rather than the models.`, { keepNext: true }),
-  tableCaption("Table I.1", "Automated tests by file"),
-  table([3000, 800, 5226], ["Test file", "Tests", "What it covers"], [
-    ["test_api.py", "12", "Every route through the test client, status codes, the health preflight and the model-status check"],
-    ["test_context_memory.py", "19", "Stored turns, ordinal and pronoun resolution, usage events, tie-break by most opened"],
-    ["test_extractors.py", "5", "Text, Markdown, source, PDF and Word extraction and chunking"],
-    ["test_indexer.py", "6", "Indexing, skipping unchanged files, re-indexing changed ones, pruning deleted files"],
-    ["test_knowledge_graph.py", "18", "Edge kinds, centring, clustering, equivalence of the fast and original algorithms"],
-    ["test_nl_interface.py", "22", "Intent routing, open and related rules, stale-context regression tests"],
-    ["test_organizer.py", "4", "Suggestions, applying a move, reverting it, edges surviving a move"],
-    ["test_privacy.py", "4", "Loopback detection and the audit report"],
-    ["test_reset_demo_state.py", "1", "Demo reset"],
-    ["test_search.py", "11", "Ranking, relative cut-off, keyword boost, confidence labels"],
-    ["test_workspace.py", "21", "Recommendation rules, creating and opening workspaces"],
-    ["Total", "123", "All pass; run on every push in continuous integration"],
+  h2NewPage("Appendix I Retrieval comparison: every query and result"),
+  para(`${tref("Table I.1")} and ${tref("Table I.2")} list all ${RETR.queries} labelled queries used in the retrieval comparison of Section 7.2.2, the file or files that were labelled as correct before any system was run, and the rank at which each system placed the first correct file, in the order filename match, BM25, embedding only and DreamOS (a dash means none in its top ${RETR.k}). The last column is what the guarded open action would do: open the top result, ask for confirmation because a runner-up is close (ask), or show candidates only because the match is below the bar (show).`, {}),
+  ...[0, 1].flatMap((part) => [
+    tableCaption(`Table I.${part + 1}`, `Per-query results (queries ${part * 18 + 1} to ${part * 18 + 18})`),
+    table([480, 3600, 2800, 1400, 746], ["#", "Query", "Correct file(s)", "F/B/E/D rank", "Open"],
+      RETR.per_query.slice(part * 18, part * 18 + 18).map((q, i) => {
+        const rk = (v) => (v ? String(v) : "-");
+        return [String(part * 18 + i + 1), q.query, q.relevant.join(", "),
+          [q.ranks.filename, q.ranks.keyword, q.ranks.embedding, q.ranks.dreamos].map(rk).join("/"),
+          ({ open: "open", ambiguous: "ask", abstain: "show" })[q.open_decision]];
+      }), { size: 22 }),
+    spacer(160),
   ]),
-  h2("Appendix J Retrieval comparison: every query and result"),
-  para(`${tref("Table J.1")} lists all ${RETR.queries} labelled queries used in the retrieval comparison of Section 7.2.2, the file or files that were labelled as correct before any system was run, whether the query shares a word with its target (Word?), and the rank at which each system placed the first correct file, in the order filename match, BM25, embedding only and DreamOS (a dash means none in its top ${RETR.k}). The last column is what the guarded open action would do: open the top result, ask for confirmation because a runner-up is close (ask), or show candidates only because the match is below the bar (show).`, { keepNext: true }),
-  tableCaption("Table J.1", "Per-query results of the retrieval comparison"),
-  table([520, 2600, 2300, 900, 1500, 1206], ["#", "Query", "Correct file(s)", "Word?", "F/B/E/D rank", "Open"],
-    RETR.per_query.map((q, i) => {
-      const rk = (v) => (v ? String(v) : "-");
-      return [String(i + 1), q.query, q.relevant.join(", "), q.shares_words ? "yes" : "no",
-        [q.ranks.filename, q.ranks.keyword, q.ranks.embedding, q.ranks.dreamos].map(rk).join("/"),
-        ({ open: "open", ambiguous: "ask", abstain: "show" })[q.open_decision]];
-    })),
-  h2("Appendix K Guarded open action: measured result"),
+  h2("Appendix J Guarded open action: measured result"),
   para(`The open action is the only place where a retrieval error becomes an action on the user's computer, so its guard was measured on the same ${RETR.queries} queries. Opening the top result unconditionally would launch ${RETR.open_policy.always_open_top1.opened} files and ${RETR.open_policy.always_open_top1.opened_wrong} of them would be wrong. The guarded action, which launches a file only at a similarity of at least ${RETR.open_policy.threshold} and with no runner-up within ${RETR.open_policy.ambiguity_margin}, launches ${RETR.open_policy.guarded_open.opened} files, all ${RETR.open_policy.guarded_open.opened_correct} correct, and holds back ${RETR.open_policy.guarded_open.abstained + RETR.open_policy.guarded_open.ambiguous} queries (${RETR.open_policy.guarded_open.abstained} below the bar and ${RETR.open_policy.guarded_open.ambiguous} with a close runner-up). Of the held-back queries, ${RETR.open_policy.guarded_open.blocked_but_top1_was_right} would have opened the right file, so the price of the guard is ${RETR.open_policy.guarded_open.blocked_but_top1_was_right} extra confirmations. The bar was tuned earlier on this same vault, so this measures the policy and is not a held-out estimate, and the application's additional tie-break by most-opened file is not modelled in this offline evaluation.`),
-  ...figure("fig_followup.png", 300, "Figure K.1", "Follow-up resolution order",
-    "Figure K.1 shows the order in which a follow-up message is resolved. Ordinal and pronoun rules are tried first, then a direct search on the topic the classifier extracted, and only if that search is below the confidence bar does the model's own refers-to-previous flag act as a last resort. This order was introduced after a live failure in which the model's flag overrode a confident search result.", FIGS),
-  ...figure("fig_pipelines.png", 440, "Figure K.2", "Indexing and query pipelines",
-    "Figure K.2 shows the two pipelines that share the system's components. Indexing extracts text, splits it into chunks, embeds each chunk, stores the vectors, asks the language model for a summary, tags and a category, and rebuilds the graph. The query pipeline classifies each message into one of five intents, resolves references to earlier results and routes the request to the matching module.", FIGS),
-  ...figure("09_wireframe.png", 400, "Figure K.3", "Original interface wireframe",
-    "Figure K.3 is the wireframe drawn at the design stage. The finished application keeps its structure: a top bar with the views and the Reindex action, a conversation area with result cards, and a single input box at the bottom.", DIAG),
-  h2("Appendix L Glossary"),
+  ...figure("09_wireframe.png", 400, "Figure J.1", "Original interface wireframe",
+    "Figure J.1 is the wireframe drawn at the design stage. The finished application keeps its structure: a top bar with the views and the Reindex action, a conversation area with result cards, and a single input box at the bottom.", DIAG),
+  h2("Appendix K Glossary"),
   table([2300, 6726], ["Term", "Meaning"], [
     ["Embedding", "A list of numbers that represents the meaning of a piece of text, so that similar meanings are close together"],
     ["Cosine similarity", "A measure of how close two embeddings are, from 0 (unrelated) to 1 (the same direction)"],
@@ -758,9 +742,9 @@ const sectionProps = (fmt, start) => ({
 
 // Body must be assembled before the lists so every caption is registered.
 const bodyChildren = [
-  ...ch1, pageBreak(), ...ch2, pageBreak(), ...ch3, pageBreak(), ...ch4, pageBreak(),
-  ...ch5, pageBreak(), ...ch6, pageBreak(), ...ch7, pageBreak(), ...ch8, pageBreak(),
-  ...refs, pageBreak(), ...appendices,
+  ...ch1, ...ch2, ...ch3, ...ch4,
+  ...ch5, ...ch6, ...ch7, ...ch8,
+  ...refs, ...appendices,
 ];
 
 const doc = new Document({
@@ -778,13 +762,13 @@ const doc = new Document({
   sections: [
     { properties: { page: { size: A4, margin: MARGINS } }, children: [...cover] },
     { properties: sectionProps(NumberFormat.LOWER_ROMAN, 1), footers: { default: footer() }, children: [
-      ...certificate, pageBreak(),
-      ...acknowledgement, pageBreak(),
-      ...contents, pageBreak(),
-      ...abstract, pageBreak(),
-      ...abbreviations, pageBreak(),
-      ...makeListOfFigures(), pageBreak(),
-      ...makeListOfTables(), pageBreak(),
+      ...certificate,
+      ...acknowledgement,
+      ...contents,
+      ...abstract,
+      ...abbreviations,
+      ...makeListOfFigures(),
+      ...makeListOfTables(),
     ] },
     { properties: sectionProps(NumberFormat.DECIMAL, 1), headers: { default: new Header({ children: [new Paragraph({ tabStops: [{ type: TabStopType.RIGHT, position: TabStopPosition.MAX }], children: [new TextRun({ text: "DreamOS - Final Year Project Report", font: FONT, size: 20, italics: true }), new TextRun({ text: "\tIICT, MGM University 2026-2027", font: FONT, size: 20, italics: true })] })] }) }, footers: { default: footer() }, children: bodyChildren },
   ],

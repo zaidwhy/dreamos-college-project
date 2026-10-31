@@ -10,7 +10,7 @@ Guide: Dr. Minakshi R. Rajput. Team: Zaid Ali Syed (2305139), Om Vyas (2305170),
 | 2 | Results and testing | Deck "Part 4"; report Chapters 6 and 7; `python -m pytest -q` in `backend/` (123 tests) |
 | 3 | Results validation | Deck "How we know the results are right"; report Section 7.2.2; `docs/benchmarks/*.json`; scripts `backend/scripts/eval_retrieval.py`, `bench_scale.py` |
 | 4 | Individual contribution | Deck "Individual contribution"; report Appendix D |
-| 5 | Project report soft copy | `docs/blackbook/DreamOS-Final-Year-Project-Report.docx` and `.pdf` (54 pages) |
+| 5 | Project report soft copy | `docs/blackbook/DreamOS-Final-Year-Project-Report.docx` and `.pdf` (49 pages) |
 | 6 | Final PPT | `docs/deck/DreamOS-Final-Monitoring.pptx` and `.pdf` (30 slides) |
 
 Extra: IEEE paper `docs/paper/DreamOS-IEEE-Paper.pdf` (6 pages; anonymous copy for double-blind review).

@@ -58,7 +58,7 @@ submission proof goes to the RM faculty; reformat to the venue template once con
 - Monitoring done. Paper approved and submitted to ICITIIT'27 (IIIT Kottayam, notification 20 Dec 2026,
   camera-ready 10 Jan 2027; decision pending). Notes: `docs/ICITIIT-2027-SUBMISSION.md`. Four builds in
   `docs/paper/` (named, AI-disclosed, anonymous, both).
-- Blackbook 54 pages (appendices F-L added), deck 30 slides, checklist `docs/MONITORING-CHECKLIST.md`,
+- Blackbook 49 pages (appendices F-K; tables never split across pages, chapters start on new pages), deck 30 slides, checklist `docs/MONITORING-CHECKLIST.md`,
   pen-drive copy in `monitoring-pack/` (gitignored). 123 tests pass.
 - Not verified: the rebuilt release exe was never launched; three paper references (NIST AI RMF, Amershi,
   Johnson FAISS) were written from memory, check on Scholar before camera-ready.
